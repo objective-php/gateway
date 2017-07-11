@@ -1,5 +1,5 @@
 {
-  "name": "objective-php/gateways",
+  "name": "objective-php/gateway",
   "description": "DAO interoperability layer",
   "type": "library",
   "keywords": [
@@ -7,7 +7,7 @@
     "database",
     "objective php"
   ],
-  "homepage": "https://github.com/objective-php/gateways",
+  "homepage": "https://github.com/objective-php/gateway",
   "license": "GPL-3.0",
   "authors": [
     {

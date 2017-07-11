@@ -129,11 +129,6 @@ abstract class AbstractGateway implements GatewayInterface, PaginableGatewayInte
     {
         $targetEntityClass = $this->targetEntity ?: $this->defaultTargetEntity;
 
-        if ($this->rawDataForNextQuery || is_null($targetEntityClass)) {
-            $data['context'] = $this->extractContext($data, true);
-            return $data;
-        }
-
         /** @var EntityInterface $entity */
         $entity = new $targetEntityClass;
 
@@ -142,18 +137,6 @@ abstract class AbstractGateway implements GatewayInterface, PaginableGatewayInte
         return $entity;
     }
 
-    protected function extractContext(&$data, $clear = false)
-    {
-        $contexts = [];
-        foreach ($data as $key => $value) {
-            if (strpos($key, 'context_') === 0) {
-                $contexts[substr($key, 8)] = $value;
-                if ($clear) unset($data[$key]);
-            }
-        }
-
-        return $contexts;
-    }
 
     /**
      * @return HydratorInterface
