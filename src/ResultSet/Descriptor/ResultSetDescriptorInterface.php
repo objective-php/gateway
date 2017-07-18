@@ -8,7 +8,6 @@
 
 namespace ObjectivePHP\Gateway\ResultSet\Descriptor;
 
-
 /**
  * Interface ResultSetDescriptorInterface
  *
@@ -16,7 +15,6 @@ namespace ObjectivePHP\Gateway\ResultSet\Descriptor;
  */
 interface ResultSetDescriptorInterface
 {
-    
     const OP_EQUALS     = '=';
     const OP_CONTAINS   = 'contains';
     const OP_GT         = '>';

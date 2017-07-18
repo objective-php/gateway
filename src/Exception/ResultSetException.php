@@ -8,8 +8,6 @@
 
 namespace ObjectivePHP\Gateway\Exception;
 
-
 class ResultSetException extends \Exception
 {
-
 }

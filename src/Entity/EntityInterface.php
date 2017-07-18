@@ -8,14 +8,11 @@
 
 namespace ObjectivePHP\Gateway\Entity;
 
-
 interface EntityInterface extends \ArrayAccess
 {
-
     public function getCollection() : string;
 
     public function getKey() : string;
 
     public function isNew() : bool;
-
 }

@@ -2,7 +2,6 @@
 
 namespace ObjectivePHP\Gateway\Exception;
 
-
 /**
  * Class ProjectionException
  *
@@ -10,5 +9,4 @@ namespace ObjectivePHP\Gateway\Exception;
  */
 class ProjectionException extends \Exception
 {
-
 }

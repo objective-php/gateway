@@ -2,7 +2,6 @@
 
 namespace ObjectivePHP\Gateway\Projection;
 
-
 interface ProjectionInterface
 {
 
@@ -15,5 +14,4 @@ interface ProjectionInterface
      * @return bool
      */
     public function isEmpty();
-
 }

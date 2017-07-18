@@ -8,14 +8,17 @@
 
 namespace ObjectivePHP\Gateway;
 
-
 interface MetaGatewayInterface extends GatewayInterface
 {
-
+    
     /**
+     * @param                  $id
      * @param GatewayInterface $gateway
+     * @param int              $readingPriority
+     * @param int              $writingPriority
+     * @param int              $flags
+     *
      * @return mixed
      */
-    public function registerGateway(GatewayInterface $gateway);
-
+    public function registerGateway(string $id, GatewayInterface $gateway, int $readingPriority = 0, int $writingPriority = 0, int $flags = 0);
 }

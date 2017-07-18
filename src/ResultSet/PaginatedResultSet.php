@@ -2,7 +2,6 @@
 
 namespace ObjectivePHP\Gateway\ResultSet;
 
-
 /**
  * Class EntitySet
  * @package Pricer\Entity
@@ -89,5 +88,4 @@ class PaginatedResultSet extends ResultSet implements PaginatedResultSetInterfac
 
         return $this;
     }
-
 }

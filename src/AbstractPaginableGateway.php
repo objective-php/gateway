@@ -8,7 +8,6 @@ use Zend\Hydrator\HydratorInterface;
 use Zend\Hydrator\NamingStrategy\UnderscoreNamingStrategy;
 use Zend\Hydrator\NamingStrategyEnabledInterface;
 
-
 /**
  * Class AbstractGateway
  *
@@ -43,17 +42,6 @@ abstract class AbstractPaginableGateway extends AbstractGateway implements Pagin
     protected $defaultPageSize = 20;
 
     /**
-     * @var HydratorInterface
-     */
-    protected $hydrator;
-
-    /**
-     * @var string
-     */
-    protected $hydratorClass;
-
-
-    /**
      * @param      $page
      * @param null $pageSize
      *
@@ -61,7 +49,6 @@ abstract class AbstractPaginableGateway extends AbstractGateway implements Pagin
      */
     public function paginate($page = 1, $pageSize = null)
     {
-
         $this->paginateNextQuery = true;
 
         $this->currentPage = $page;
@@ -70,6 +57,4 @@ abstract class AbstractPaginableGateway extends AbstractGateway implements Pagin
 
         return $this;
     }
-
-
 }

@@ -14,17 +14,20 @@ use ObjectivePHP\Gateway\ResultSet\ResultSetInterface;
  */
 interface GatewayInterface
 {
-
-    const FETCH = 1;
+    const FETCH     = 1;
     const FETCH_ONE = 2;
     const FETCH_ALL = 4;
-    const PERSIST = 8;
-    const UPDATE = 16;
-    const DELETE = 32;
-    const PURGE = 64;
-
+    const PERSIST   = 8;
+    const UPDATE    = 16;
+    const DELETE    = 32;
+    const PURGE     = 64;
+    
+    const WRITE = self::PERSIST | self::UPDATE | self::DELETE | self::PURGE;
+    const READ  = self::FETCH | self::FETCH_ONE | self::FETCH_ALL;
+    const ALL   = self::READ | self::WRITE;
+    
     public function fetch(ResultSetDescriptorInterface $resultSetDescriptor): ProjectionInterface;
-
+    
     /**
      * Retrieve projections from persistence layer
      *
@@ -33,33 +36,34 @@ interface GatewayInterface
      * @return ResultSetInterface
      */
     public function fetchAll(ResultSetDescriptorInterface $descriptor): ResultSetInterface;
-
+    
     /**
      * Retrieve one single projection from persistence layer
      *
      * @return EntityInterface
      */
     public function fetchOne($key): EntityInterface;
-
+    
     /**
      * Persist one or more entities
      *
      * Save or update entities representation in persistence layer
      *
      * @param EntityInterface[] $entities
+     *
      * @return bool
      */
     public function persist(EntityInterface ...$entities): bool;
-
-
+    
+    
     /**
      * @param ResultSetDescriptorInterface $descriptor
-     * @param mixed $data Traversable data container (['field' => 'value'])
+     * @param mixed                        $data Traversable data container (['field' => 'value'])
      *
      * @return mixed
      */
     public function update(ResultSetDescriptorInterface $descriptor, $data);
-
+    
     /**
      * Delete one or more entities
      *
@@ -68,7 +72,7 @@ interface GatewayInterface
      * @return bool
      */
     public function delete(EntityInterface ...$entities);
-
+    
     /**
      * Delete entities matching descriptor
      *
@@ -77,7 +81,7 @@ interface GatewayInterface
      * @return bool
      */
     public function purge(ResultSetDescriptorInterface $descriptor);
-
+    
     /**
      * Tells MetaGateway whether actual gateway can fetch/push to data to backend using given method and parameters
      *
@@ -86,5 +90,4 @@ interface GatewayInterface
      * @return bool
      */
     public function can($method, array $parameters): bool;
-
 }

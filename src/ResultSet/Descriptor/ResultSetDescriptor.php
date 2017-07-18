@@ -8,7 +8,6 @@
 
 namespace ObjectivePHP\Gateway\ResultSet\Descriptor;
 
-
 /**
  * Class ResultSetDescriptor
  *
@@ -19,7 +18,7 @@ class ResultSetDescriptor implements ResultSetDescriptorInterface
     /**
      * @var array
      */
-    protected $filters = [];
+    protected $filters = array();
     
     /**
      * @var int
@@ -34,7 +33,7 @@ class ResultSetDescriptor implements ResultSetDescriptorInterface
     /**
      * @var array
      */
-    protected $sort = [];
+    protected $sort = array();
     
     /**
      * @var string
@@ -44,7 +43,7 @@ class ResultSetDescriptor implements ResultSetDescriptorInterface
     /**
      * @var array
      */
-    protected $aggregationRules = [];
+    protected $aggregationRules = array();
     
     /**
      * @var int
@@ -204,5 +203,4 @@ class ResultSetDescriptor implements ResultSetDescriptorInterface
     {
         return $this->collectionName;
     }
-    
 }

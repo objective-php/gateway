@@ -1,9 +1,8 @@
 <?php
-    
+
     namespace ObjectivePHP\Gateway\ResultSet;
 
-
-    /**
+/**
      * Interface PaginatedResultSetInterface
      *
      * @package ObjectivePHP\Gateway\Entity

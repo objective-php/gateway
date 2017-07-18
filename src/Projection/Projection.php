@@ -2,7 +2,6 @@
 
 namespace ObjectivePHP\Gateway\Projection;
 
-
 /**
  * Class Projection
  * @package ObjectivePHP\Gateway\Projection
@@ -24,5 +23,4 @@ class Projection extends \ArrayObject implements ProjectionInterface
     {
         return count($this) === 0;
     }
-
 }

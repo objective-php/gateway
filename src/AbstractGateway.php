@@ -10,35 +10,46 @@ use Zend\Hydrator\HydratorInterface;
 use Zend\Hydrator\NamingStrategy\UnderscoreNamingStrategy;
 use Zend\Hydrator\NamingStrategyEnabledInterface;
 
-
 /**
  * Class AbstractGateway
  *
  * @package Fei\ApiServer\Gateway
  */
-abstract class AbstractGateway implements GatewayInterface, PaginableGatewayInterface
+abstract class AbstractGateway implements GatewayInterface
 {
-
+    
     /**
      * @var
      */
     protected $defaultEntityClass;
-
+    
     /**
      * @var
      */
     protected $entityClass;
-
+    
     /**
      * @var HydratorInterface
      */
     protected $hydrator;
-
+    
     /**
      * @var string
      */
     protected $hydratorClass;
-
+    
+    protected $allowedMethods = self::ALL;
+    
+    protected $methodsMapping = array(
+        'fetch'    => self::FETCH,
+        'fetchOne' => self::FETCH_ONE,
+        'fetchAll' => self::FETCH_ALL,
+        'persist'  => self::PERSIST,
+        'update'   => self::UPDATE,
+        'delete'   => self::DELETE,
+        'purge'    => self::PURGE
+    );
+    
     /**
      * @param $entityClass
      *
@@ -47,10 +58,35 @@ abstract class AbstractGateway implements GatewayInterface, PaginableGatewayInte
     public function setEntityClass($entityClass)
     {
         $this->entityClass = $entityClass;
-
+        
         return $this;
     }
-
+    
+    public function can($method, array $parameters): bool
+    {
+        return (isset($this->methodsMapping[$method])) ? $this->methodsMapping[$method] & $this->allowedMethods : true;
+    }
+    
+    /**
+     * @return int
+     */
+    public function getAllowedMethods(): int
+    {
+        return $this->allowedMethods;
+    }
+    
+    /**
+     * @param int $allowedMethods
+     *
+     * @return $this
+     */
+    public function setAllowedMethods(int $allowedMethods)
+    {
+        $this->allowedMethods = $allowedMethods;
+        
+        return $this;
+    }
+    
     /**
      * @param $data
      *
@@ -59,36 +95,38 @@ abstract class AbstractGateway implements GatewayInterface, PaginableGatewayInte
     protected function entityFactory($data)
     {
         $entityClass = $this->entityClass ?? $this->defaultEntityClass;
-
-        if(!$entityClass)
-        {
+        
+        if (!$entityClass) {
             throw new GatewayException('No entity class provided.');
         }
-
-        if(!class_exists($entityClass))
-        {
+        
+        if (!class_exists($entityClass)) {
             throw new GatewayException(sprintf('Target entity class "%s" not found.', $entityClass));
         }
-
+        
         /** @var ProjectionInterface $entity */
         $entity = new $entityClass;
-
+        
         if (!$entityClass instanceof EntityInterface) {
-            throw new GatewayException(sprintf('Entity class "%s" does not implement "%s".', $entityClass, EntityInterface::class));
+            throw new GatewayException(
+                sprintf(
+                    'Entity class "%s" does not implement "%s".', $entityClass,
+                    EntityInterface::class
+                )
+            );
         }
-
+        
         $this->getHydrator()->hydrate($data, $entity);
-
+        
         return $entity;
     }
-
-
+    
     /**
      * @return HydratorInterface
      */
-    public function getHydrator() : HydratorInterface
+    public function getHydrator(): HydratorInterface
     {
-        if(is_null($this->hydrator)) {
+        if (is_null($this->hydrator)) {
             $className = $this->hydratorClass ?? ClassMethods::class;
             /** @var HydratorInterface $hydrator */
             $hydrator = new $className;
@@ -97,8 +135,7 @@ abstract class AbstractGateway implements GatewayInterface, PaginableGatewayInte
             }
             $this->hydrator = $hydrator;
         }
-
+        
         return $this->hydrator;
-
     }
 }
