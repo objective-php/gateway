@@ -23,5 +23,5 @@
         /**
          * @return int
          */
-        public function getPerPage();
+        public function getPageSize();
     }

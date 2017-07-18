@@ -2,6 +2,8 @@
 
     namespace ObjectivePHP\Gateway\ResultSet;
 
+    use ObjectivePHP\Gateway\Entity\EntityInterface;
+
     /**
      * Interface ResultSetInterface
      *
@@ -18,4 +20,10 @@
          * @return bool
          */
         public function isEmpty();
+
+        /**
+         * @param EntityInterface[] ...$entities
+         * @return mixed
+         */
+        public function addEntities(EntityInterface ...$entities) : ResultSetInterface;
     }

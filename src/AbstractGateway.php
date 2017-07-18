@@ -3,6 +3,8 @@
 namespace ObjectivePHP\Gateway;
 
 use ObjectivePHP\Gateway\Entity\EntityInterface;
+use ObjectivePHP\Gateway\Exception\GatewayException;
+use ObjectivePHP\Gateway\Projection\ProjectionInterface;
 use Zend\Hydrator\ClassMethods;
 use Zend\Hydrator\HydratorInterface;
 use Zend\Hydrator\NamingStrategy\UnderscoreNamingStrategy;
@@ -20,52 +22,12 @@ abstract class AbstractGateway implements GatewayInterface, PaginableGatewayInte
     /**
      * @var
      */
-    protected $defaultTargetEntity;
+    protected $defaultEntityClass;
 
     /**
      * @var
      */
-    protected $targetEntity;
-
-    /**
-     * @var bool Tells whether new query results should be return as is
-     */
-    protected $rawDataForNextQuery = false;
-
-    /**
-     * @var
-     */
-    protected $cache;
-
-    /**
-     * @var array
-     */
-    protected $validatedEntities = [];
-
-    /**
-     * @var
-     */
-    protected $perPage;
-
-    /**
-     * @var bool
-     */
-    protected $paginateCurrentQuery = false;
-
-    /**
-     * @var bool
-     */
-    protected $paginateNextQuery = false;
-
-    /**
-     * @var
-     */
-    protected $currentPage;
-
-    /**
-     * @var int
-     */
-    protected $defaultPerPage = 20;
+    protected $entityClass;
 
     /**
      * @var HydratorInterface
@@ -78,44 +40,13 @@ abstract class AbstractGateway implements GatewayInterface, PaginableGatewayInte
     protected $hydratorClass;
 
     /**
-     * @param $entity
+     * @param $entityClass
      *
      * @return $this
      */
-    public function setTargetEntity($entity)
+    public function setEntityClass($entityClass)
     {
-        $this->targetEntity = $entity;
-
-        return $this;
-    }
-
-    /**
-     * @return AbstractGateway
-     */
-    public function raw()
-    {
-        $this->rawDataForNextQuery = true;
-
-        return $this;
-    }
-
-
-    /**
-     * @param      $page
-     * @param null $resultsPerPage
-     *
-     * @return $this
-     */
-    public function paginate($page, $resultsPerPage = null)
-    {
-
-        $this->paginateNextQuery = true;
-
-        $this->currentPage = $page;
-
-        if (!is_null($resultsPerPage)) {
-            $this->perPage = $resultsPerPage;
-        }
+        $this->entityClass = $entityClass;
 
         return $this;
     }
@@ -123,14 +54,28 @@ abstract class AbstractGateway implements GatewayInterface, PaginableGatewayInte
     /**
      * @param $data
      *
-     * @return EntityInterface|array
+     * @return ProjectionInterface|array
      */
     protected function entityFactory($data)
     {
-        $targetEntityClass = $this->targetEntity ?: $this->defaultTargetEntity;
+        $entityClass = $this->entityClass ?? $this->defaultEntityClass;
 
-        /** @var EntityInterface $entity */
-        $entity = new $targetEntityClass;
+        if(!$entityClass)
+        {
+            throw new GatewayException('No entity class provided.');
+        }
+
+        if(!class_exists($entityClass))
+        {
+            throw new GatewayException(sprintf('Target entity class "%s" not found.', $entityClass));
+        }
+
+        /** @var ProjectionInterface $entity */
+        $entity = new $entityClass;
+
+        if (!$entityClass instanceof EntityInterface) {
+            throw new GatewayException(sprintf('Entity class "%s" does not implement "%s".', $entityClass, EntityInterface::class));
+        }
 
         $this->getHydrator()->hydrate($data, $entity);
 
@@ -153,7 +98,7 @@ abstract class AbstractGateway implements GatewayInterface, PaginableGatewayInte
             $this->hydrator = $hydrator;
         }
 
-        return $this->getHydrator();
+        return $this->hydrator;
 
     }
 }

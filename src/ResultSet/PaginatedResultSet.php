@@ -53,7 +53,7 @@ class PaginatedResultSet extends ResultSet implements PaginatedResultSetInterfac
     /**
      * @return mixed
      */
-    public function getPerPage()
+    public function getPageSize()
     {
         return $this->perPage;
     }

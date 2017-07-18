@@ -1,11 +1,10 @@
 <?php
 
-namespace ObjectivePHP\Gateway;
+namespace ObjectivePHP\Gateway\Exception;
 
 
 class GatewayException extends \Exception
 {
 
     const INVALID_RESOURCE = 1;
-    const SQL_ERROR = 2;
 }

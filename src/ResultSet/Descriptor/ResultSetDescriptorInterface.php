@@ -70,21 +70,21 @@ interface ResultSetDescriptorInterface
      *
      * @return mixed
      */
-    public function aggregate($property, $aggregationType);
+    public function aggregateOn($property, $aggregationType);
     
     /**
      * @param string $collectionName
      *
      * @return $this
      */
-    public function collection(string $collectionName);
+    public function from(string $collectionName);
     
     /**
      * @param $size
      *
      * @return $this
      */
-    public function setSize($size);
+    public function limitTo($size);
     
     /**
      * @return $this
@@ -115,7 +115,9 @@ interface ResultSetDescriptorInterface
      * @return int Entity set size (== LIMIT in SQL)
      */
     public function getSize() : int;
-    
-    
+
+    /**
+     * @return string
+     */
     public function getCollectionName() : string;
 }

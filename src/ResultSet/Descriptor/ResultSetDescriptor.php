@@ -126,14 +126,14 @@ class ResultSetDescriptor implements ResultSetDescriptorInterface
      *
      * @return $this
      */
-    public function aggregate($property, $aggregationType)
+    public function aggregateOn($property, $aggregationType)
     {
         $this->aggregationRules[$property] = $aggregationType;
         
         return $this;
     }
     
-    public function collection(string $collectionName)
+    public function from(string $collectionName)
     {
         $this->collectionName = $collectionName;
         
@@ -193,7 +193,7 @@ class ResultSetDescriptor implements ResultSetDescriptorInterface
      *
      * @return $this
      */
-    public function setSize($size)
+    public function limitTo($size)
     {
         $this->size = $size;
         
