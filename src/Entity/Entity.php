@@ -1,31 +1,54 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: gde
- * Date: 19/07/2017
- * Time: 09:47
- */
 
 namespace ObjectivePHP\Gateway\Entity;
 
+use ObjectivePHP\Primitives\String\Camel;
+
 class Entity extends \ArrayObject implements EntityInterface
 {
-    protected $collection = '';
+    protected $entityCollection = 'NONE';
 
-    protected $key = 'id';
+    protected $entityIdentifier = 'id';
 
-    public function getCollection(): string
+    public function getEntityCollection(): string
     {
-        return $this->collection;
+        return $this->entityCollection;
     }
 
-    public function getKey(): string
+    public function getEntityIdentifier(): string
     {
-        return $this->key;
+        return $this[$this->entityIdentifier];
     }
 
     public function isNew(): bool
     {
-        return !$this[$this->key] ?? true;
+        return !$this[$this->entityIdentifier] ?? true;
+    }
+
+    public function offsetGet($index)
+    {
+        $getter = 'get' . Camel::case($index);
+        if(method_exists($this, $getter)) return $this->$getter();
+        else return parent::offsetGet($index);
+    }
+
+    public function offsetSet($index, $value)
+    {
+        $setter = 'set' . Camel::case($index);
+        if(method_exists($this, $setter)) return $this->$setter($value);
+        else return parent::offsetGet($index);
+    }
+
+    public function offsetUnset($index)
+    {
+        $setter = 'set' . Camel::case($index);
+        if(method_exists($this, $setter)) return $this->$setter(null);
+        else parent::offsetUnset($index);
+    }
+
+    public function offsetExists($index)
+    {
+        if(method_exists($this, 'get' . Camel::case($index))) return true;
+        else return parent::offsetExists($index);
     }
 }

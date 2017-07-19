@@ -132,7 +132,7 @@ abstract class AbstractGateway implements GatewayInterface
                 GatewayException::INVALID_ENTITY
             );
         }
-        
+
         $this->getHydrator()->hydrate($data, $entity);
         
         return $entity;
