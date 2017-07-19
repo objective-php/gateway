@@ -89,5 +89,5 @@ interface GatewayInterface
      *
      * @return bool
      */
-    public function can($method, array $parameters): bool;
+    public function can($method, ...$parameters): bool;
 }

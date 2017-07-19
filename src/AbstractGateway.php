@@ -62,7 +62,7 @@ abstract class AbstractGateway implements GatewayInterface
         return $this;
     }
     
-    public function can($method, array $parameters): bool
+    public function can($method, ...$parameters): bool
     {
         return (isset($this->methodsMapping[$method])) ? $this->methodsMapping[$method] & $this->allowedMethods : true;
     }
