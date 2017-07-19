@@ -53,7 +53,7 @@ class Entity extends \ArrayObject implements EntityInterface
         else return parent::offsetExists($index);
     }
 
-    public function getFields(): array
+    public function getEntityFields(): array
     {
         if($this->getArrayCopy())
         {
