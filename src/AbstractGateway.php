@@ -164,7 +164,7 @@ abstract class AbstractGateway implements GatewayInterface
      */
     public function getDefaultEntityClass()
     {
-        return $this->defaultEntityClass;
+        return self::DEFAULT_ENTITY_CLASS;
     }
 
     /**
@@ -209,6 +209,13 @@ abstract class AbstractGateway implements GatewayInterface
     public function setMethodsMapping(array $methodsMapping)
     {
         $this->methodsMapping = $methodsMapping;
+
+        return $this;
+    }
+
+    public function setHydrator(HydratorInterface $hydrator)
+    {
+        $this->hydrator = $hydrator;
 
         return $this;
     }

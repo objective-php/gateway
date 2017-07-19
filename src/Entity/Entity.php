@@ -3,6 +3,7 @@
 namespace ObjectivePHP\Gateway\Entity;
 
 use ObjectivePHP\Primitives\String\Camel;
+use ObjectivePHP\Primitives\String\Snake;
 
 class Entity extends \ArrayObject implements EntityInterface
 {
@@ -50,5 +51,27 @@ class Entity extends \ArrayObject implements EntityInterface
     {
         if(method_exists($this, 'get' . Camel::case($index))) return true;
         else return parent::offsetExists($index);
+    }
+
+    public function getFields(): array
+    {
+        if($this->getArrayCopy())
+        {
+            return array_keys($this->getArrayCopy());
+        }
+        else {
+            $fields = [];
+            foreach(get_class_methods($this) as $method)
+            {
+                if(in_array($method, ['getEntityFields', 'getEntityIdentifier', 'getEntityCollection'])) continue;
+
+                if(strpos($method, 'get') === 0)
+                {
+                    $fields[] = Snake::case(substr($method, 3));
+                }
+            }
+
+            return $fields;
+        }
     }
 }
