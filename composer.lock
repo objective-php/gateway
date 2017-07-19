@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "a73e8a226515d4fa4ca4e77659175226",
-    "content-hash": "3e6bf29ba41583ab9f23aca8e6c1c197",
+    "hash": "41ecc8c749c620285e1527fb2b79d6a3",
+    "content-hash": "519fd110e438cd7ac4a64b52e26c2fa4",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -284,6 +284,60 @@
                 "psr"
             ],
             "time": "2017-02-14 16:28:37"
+        },
+        {
+            "name": "zendframework/zend-eventmanager",
+            "version": "3.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/zendframework/zend-eventmanager.git",
+                "reference": "9d72db10ceb6e42fb92350c0cb54460da61bd79c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/zendframework/zend-eventmanager/zipball/9d72db10ceb6e42fb92350c0cb54460da61bd79c",
+                "reference": "9d72db10ceb6e42fb92350c0cb54460da61bd79c",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^5.6 || ^7.0"
+            },
+            "require-dev": {
+                "athletic/athletic": "^0.1",
+                "container-interop/container-interop": "^1.1.0",
+                "phpunit/phpunit": "^6.0.7 || ^5.7.14",
+                "zendframework/zend-coding-standard": "~1.0.0",
+                "zendframework/zend-stdlib": "^2.7.3 || ^3.0"
+            },
+            "suggest": {
+                "container-interop/container-interop": "^1.1.0, to use the lazy listeners feature",
+                "zendframework/zend-stdlib": "^2.7.3 || ^3.0, to use the FilterChain feature"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.2-dev",
+                    "dev-develop": "3.3-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Zend\\EventManager\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Trigger and listen to events within a PHP application",
+            "homepage": "https://github.com/zendframework/zend-eventmanager",
+            "keywords": [
+                "event",
+                "eventmanager",
+                "events",
+                "zf2"
+            ],
+            "time": "2017-07-11 19:17:22"
         },
         {
             "name": "zendframework/zend-filter",
@@ -4874,60 +4928,6 @@
                 "zf2"
             ],
             "time": "2016-10-24 13:23:32"
-        },
-        {
-            "name": "zendframework/zend-eventmanager",
-            "version": "3.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/zendframework/zend-eventmanager.git",
-                "reference": "9d72db10ceb6e42fb92350c0cb54460da61bd79c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/zendframework/zend-eventmanager/zipball/9d72db10ceb6e42fb92350c0cb54460da61bd79c",
-                "reference": "9d72db10ceb6e42fb92350c0cb54460da61bd79c",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^5.6 || ^7.0"
-            },
-            "require-dev": {
-                "athletic/athletic": "^0.1",
-                "container-interop/container-interop": "^1.1.0",
-                "phpunit/phpunit": "^6.0.7 || ^5.7.14",
-                "zendframework/zend-coding-standard": "~1.0.0",
-                "zendframework/zend-stdlib": "^2.7.3 || ^3.0"
-            },
-            "suggest": {
-                "container-interop/container-interop": "^1.1.0, to use the lazy listeners feature",
-                "zendframework/zend-stdlib": "^2.7.3 || ^3.0, to use the FilterChain feature"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.2-dev",
-                    "dev-develop": "3.3-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Zend\\EventManager\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "description": "Trigger and listen to events within a PHP application",
-            "homepage": "https://github.com/zendframework/zend-eventmanager",
-            "keywords": [
-                "event",
-                "eventmanager",
-                "events",
-                "zf2"
-            ],
-            "time": "2017-07-11 19:17:22"
         }
     ],
     "aliases": [],

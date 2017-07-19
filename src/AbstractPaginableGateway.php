@@ -2,12 +2,6 @@
 
 namespace ObjectivePHP\Gateway;
 
-use ObjectivePHP\Gateway\Projection\ProjectionInterface;
-use Zend\Hydrator\ClassMethods;
-use Zend\Hydrator\HydratorInterface;
-use Zend\Hydrator\NamingStrategy\UnderscoreNamingStrategy;
-use Zend\Hydrator\NamingStrategyEnabledInterface;
-
 /**
  * Class AbstractGateway
  *
