@@ -2,9 +2,11 @@
 
 namespace ObjectivePHP\Gateway;
 
+use ObjectivePHP\Gateway\Entity\Entity;
 use ObjectivePHP\Gateway\Entity\EntityInterface;
 use ObjectivePHP\Gateway\Exception\GatewayException;
 use ObjectivePHP\Gateway\Projection\ProjectionInterface;
+use Zend\Hydrator\ArraySerializable;
 use Zend\Hydrator\ClassMethods;
 use Zend\Hydrator\HydratorInterface;
 use Zend\Hydrator\NamingStrategy\UnderscoreNamingStrategy;
@@ -21,7 +23,7 @@ abstract class AbstractGateway implements GatewayInterface
     /**
      * @var
      */
-    protected $defaultEntityClass;
+   const DEFAULT_ENTITY_CLASS = Entity::class;
     
     /**
      * @var
@@ -108,25 +110,26 @@ abstract class AbstractGateway implements GatewayInterface
      */
     protected function entityFactory($data)
     {
-        $entityClass = $this->entityClass ?? $this->defaultEntityClass;
+        $entityClass = $this->entityClass ?? self::DEFAULT_ENTITY_CLASS;
         
         if (!$entityClass) {
             throw new GatewayException('No entity class provided.');
         }
         
         if (!class_exists($entityClass)) {
-            throw new GatewayException(sprintf('Target entity class "%s" not found.', $entityClass));
+            throw new GatewayException(sprintf('Target entity class "%s" not found.', $entityClass), GatewayException::ENTITY_NOT_FOUND);
         }
         
         /** @var ProjectionInterface $entity */
         $entity = new $entityClass;
         
-        if (!$entityClass instanceof EntityInterface) {
+        if (!$entity instanceof EntityInterface) {
             throw new GatewayException(
                 sprintf(
                     'Entity class "%s" does not implement "%s".', $entityClass,
                     EntityInterface::class
-                )
+                ),
+                GatewayException::INVALID_ENTITY
             );
         }
         
@@ -141,15 +144,72 @@ abstract class AbstractGateway implements GatewayInterface
     public function getHydrator(): HydratorInterface
     {
         if (is_null($this->hydrator)) {
-            $className = $this->hydratorClass ?? ClassMethods::class;
+            $entityClass = $this->entityClass ?? self::DEFAULT_ENTITY_CLASS;
+            $className = $this->hydratorClass ?: ($entityClass == Entity::class) ? ArraySerializable::class : ClassMethods::class;
+
             /** @var HydratorInterface $hydrator */
             $hydrator = new $className;
             if ($hydrator instanceof NamingStrategyEnabledInterface) {
                 $hydrator->setNamingStrategy(new UnderscoreNamingStrategy());
             }
+
             $this->hydrator = $hydrator;
         }
         
         return $this->hydrator;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDefaultEntityClass()
+    {
+        return $this->defaultEntityClass;
+    }
+
+    /**
+     * @param mixed $defaultEntityClass
+     */
+    public function setDefaultEntityClass($defaultEntityClass)
+    {
+        $this->defaultEntityClass = $defaultEntityClass;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getHydratorClass(): string
+    {
+        return $this->hydratorClass;
+    }
+
+    /**
+     * @param string $hydratorClass
+     */
+    public function setHydratorClass(string $hydratorClass)
+    {
+        $this->hydratorClass = $hydratorClass;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getMethodsMapping(): array
+    {
+        return $this->methodsMapping;
+    }
+
+    /**
+     * @param array $methodsMapping
+     */
+    public function setMethodsMapping(array $methodsMapping)
+    {
+        $this->methodsMapping = $methodsMapping;
+
+        return $this;
     }
 }

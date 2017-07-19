@@ -10,12 +10,16 @@ namespace Tests\ObjectivePHP\Gateway;
 
 use Codeception\Util\Stub;
 use ObjectivePHP\Gateway\AbstractGateway;
+use ObjectivePHP\Gateway\Entity\Entity;
 use ObjectivePHP\Gateway\Entity\EntityInterface;
+use ObjectivePHP\Gateway\Exception\GatewayException;
 use ObjectivePHP\Gateway\GatewayInterface;
 use ObjectivePHP\Gateway\Projection\ProjectionInterface;
 use ObjectivePHP\Gateway\ResultSet\Descriptor\ResultSetDescriptorInterface;
 use ObjectivePHP\Gateway\ResultSet\ResultSetInterface;
 use PHPUnit\Framework\TestCase;
+use Zend\Hydrator\ArraySerializable;
+use Zend\Hydrator\ClassMethods;
 
 class AbstractGatewayTest extends TestCase
 {
@@ -40,6 +44,72 @@ class AbstractGatewayTest extends TestCase
         // but not if the actual method does not exist!
         $this->assertFalse($gateway->can('fetchSomethingNonExisting'));
     }
+
+    public function testAllowedMethodsAccessors()
+    {
+        $gateway = new SomeGateway();
+
+        // check default value
+        $this->assertEquals(GatewayInterface::ALL, $gateway->getAllowedMethods());
+
+        // test setter
+        $gateway->setAllowedMethods(GatewayInterface::WRITE);
+        $this->assertEquals(GatewayInterface::WRITE, $gateway->getAllowedMethods());
+    }
+
+    public function testDefaultHydratorIsArraySerializableWhenDefaultEntityClassIsObjectiveEntity()
+    {
+        $gateway = new SomeGateway();
+        $this->assertInstanceOf(ArraySerializable::class, $gateway->getHydrator());
+    }
+
+
+    public function testDefaultHydratorIsClassMEthodsWhenDefaultEntityClassIsDifferentThanBaseEntity()
+    {
+        $gateway = new OtherGateway();
+
+        $this->assertInstanceOf(ClassMethods::class, $gateway->getHydrator());
+    }
+
+    public function testBaseEntityFactory()
+    {
+        $gateway = new SomeGateway();
+        $entity = $gateway->fetchOne('whatever');
+
+        $this->assertInstanceOf(Entity::class, $entity);
+
+        $this->assertArrayHasKey('field', $entity->getArrayCopy());
+    }
+
+    public function testCustomEntityFactory()
+    {
+        $gateway = new OtherGateway();
+        $entity = $gateway->fetchOne('whatever');
+
+        $this->assertInstanceOf(OtherEntity::class, $entity);
+
+        $this->assertEquals('value', $entity->getField());
+    }
+
+    public function testInvalidEntityClassMakesEntityFactoryFail()
+    {
+        $gateway = new InvalidGateway();
+
+        $this->expectException(GatewayException::class);
+        $this->expectExceptionCode(GatewayException::INVALID_ENTITY);
+
+        $gateway->fetchOne('whatever');
+    }
+
+    public function testUnknownEntityClassMakesEntityFactoryFail()
+    {
+        $gateway = new InvalidGateway();
+        $gateway->setEntityClass('NotExistingClass');
+        $this->expectException(GatewayException::class);
+        $this->expectExceptionCode(GatewayException::ENTITY_NOT_FOUND);
+
+        $gateway->fetchOne('whatever');
+    }
 }
 
 class SomeGateway extends AbstractGateway
@@ -55,12 +125,11 @@ class SomeGateway extends AbstractGateway
 
     public function fetchAll(ResultSetDescriptorInterface $descriptor): ResultSetInterface
     {
-        // TODO: Implement fetchAll() method.
     }
 
     public function fetchOne($key): EntityInterface
     {
-        // TODO: Implement fetchOne() method.
+        return $this->entityFactory(array('id' => 1, 'field' => 'value'));
     }
 
     public function persist(EntityInterface ...$entities): bool
@@ -96,4 +165,127 @@ class SomeGateway extends AbstractGateway
     {
         return true;
     }
+}
+
+class OtherGateway extends AbstractGateway
+{
+    protected $entityClass = OtherEntity::class;
+
+    public function existingMethod()
+    {
+    }
+
+    public function fetch(ResultSetDescriptorInterface $resultSetDescriptor): ProjectionInterface
+    {
+        // TODO: Implement fetch() method.
+    }
+
+    public function fetchAll(ResultSetDescriptorInterface $descriptor): ResultSetInterface
+    {
+        // TODO: Implement fetchAll() method.
+    }
+
+    public function fetchOne($key): EntityInterface
+    {
+        return $this->entityFactory(array('id' => 1, 'field' => 'value'));
+    }
+
+    public function persist(EntityInterface ...$entities): bool
+    {
+        // TODO: Implement persist() method.
+    }
+
+    public function update(ResultSetDescriptorInterface $descriptor, $data)
+    {
+        // TODO: Implement update() method.
+    }
+
+    public function delete(EntityInterface ...$entities)
+    {
+        // TODO: Implement delete() method.
+    }
+
+    public function purge(ResultSetDescriptorInterface $descriptor)
+    {
+        // TODO: Implement purge() method.
+    }
+
+    public function fetchSomething()
+    {
+    }
+
+    public function canFetchSomething()
+    {
+        return true;
+    }
+
+    public function canFetchSomethingNonExisting()
+    {
+        return true;
+    }
+}
+
+class OtherEntity extends Entity
+{
+    protected $field;
+
+    /**
+     * @return mixed
+     */
+    public function getField()
+    {
+        return $this->field;
+    }
+
+    /**
+     * @param mixed $field
+     */
+    public function setField($field)
+    {
+        $this->field = $field;
+    }
+}
+
+class InvalidGateway extends AbstractGateway
+{
+    protected $entityClass = InvalidEntity::class;
+
+    public function fetch(ResultSetDescriptorInterface $resultSetDescriptor): ProjectionInterface
+    {
+        // TODO: Implement fetch() method.
+    }
+
+    public function fetchAll(ResultSetDescriptorInterface $descriptor): ResultSetInterface
+    {
+        // TODO: Implement fetchAll() method.
+    }
+
+    public function fetchOne($key): EntityInterface
+    {
+        return $this->entityFactory(array('id' => 1, 'field' => 'value'));
+    }
+
+    public function persist(EntityInterface ...$entities): bool
+    {
+        // TODO: Implement persist() method.
+    }
+
+    public function update(ResultSetDescriptorInterface $descriptor, $data)
+    {
+        // TODO: Implement update() method.
+    }
+
+    public function delete(EntityInterface ...$entities)
+    {
+        // TODO: Implement delete() method.
+    }
+
+    public function purge(ResultSetDescriptorInterface $descriptor)
+    {
+        // TODO: Implement purge() method.
+    }
+}
+
+class InvalidEntity
+{
 }

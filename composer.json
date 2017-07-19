@@ -20,7 +20,9 @@
     "php": ">=7.0",
     "objective-php/primitives": "^1.3.6",
     "objective-php/notification": "^1.1.0",
-    "zendframework/zend-hydrator": "^2.2"
+    "zendframework/zend-hydrator": "^2.2",
+    "zendframework/zend-filter": "^2.7",
+    "zendframework/zend-servicemanager": "^3.3"
   },
   "require-dev": {
     "codeception/codeception": "^2.1",
