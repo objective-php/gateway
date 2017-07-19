@@ -64,7 +64,21 @@ abstract class AbstractGateway implements GatewayInterface
     
     public function can($method, ...$parameters): bool
     {
-        return (isset($this->methodsMapping[$method])) ? $this->methodsMapping[$method] & $this->allowedMethods : true;
+
+        // if method does not exist, simply return false
+        if (!method_exists($this, $method)) {
+            return false;
+        }
+
+        // look for a dedicated method to answer the question
+        $canMethod = 'can' . ucfirst($method);
+        if (method_exists($this, $canMethod)) {
+            return $this->$canMethod(...$parameters);
+        }
+
+        // finally, fallback to the default behaviour: is the method standard and reported as allowed, or does
+        // the method exists (for non-standard methods only)
+        return (isset($this->methodsMapping[$method])) ? $this->methodsMapping[$method] & $this->allowedMethods : method_exists($this, $method);
     }
     
     /**
