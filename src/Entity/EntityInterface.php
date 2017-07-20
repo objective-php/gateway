@@ -10,6 +10,8 @@ namespace ObjectivePHP\Gateway\Entity;
 
 interface EntityInterface extends \ArrayAccess
 {
+    const DEFAULT_ENTITY_COLLECTION = 'NONE';
+
     public function getEntityCollection() : string;
 
     public function getEntityIdentifier() : string;

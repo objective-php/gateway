@@ -7,7 +7,7 @@ use ObjectivePHP\Primitives\String\Snake;
 
 class Entity extends \ArrayObject implements EntityInterface
 {
-    protected $entityCollection = 'NONE';
+    protected $entityCollection = self::DEFAULT_ENTITY_COLLECTION;
 
     protected $entityIdentifier = 'id';
 
@@ -18,7 +18,7 @@ class Entity extends \ArrayObject implements EntityInterface
 
     public function getEntityIdentifier(): string
     {
-        return $this[$this->entityIdentifier];
+        return $this->entityIdentifier;
     }
 
     public function isNew(): bool
@@ -63,7 +63,20 @@ class Entity extends \ArrayObject implements EntityInterface
             $fields = [];
             foreach(get_class_methods($this) as $method)
             {
-                if(in_array($method, ['getEntityFields', 'getEntityIdentifier', 'getEntityCollection'])) continue;
+                if (in_array(
+                    $method,
+                    [
+                        'getEntityFields',
+                        'getEntityIdentifier',
+                        'getEntityCollection',
+                        'getArrayCopy',
+                        'getFlags',
+                        'getIterator',
+                        'getIteratorClass'
+                    ]
+                )) {
+                    continue;
+                }
 
                 if(strpos($method, 'get') === 0)
                 {
