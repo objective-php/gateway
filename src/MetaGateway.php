@@ -22,31 +22,34 @@ use ObjectivePHP\Gateway\ResultSet\ResultSetInterface;
 class MetaGateway implements MetaGatewayInterface
 {
     const WRITING_MASTER = 1;
-    const ALLOWED_FLAGS = array(self::WRITING_MASTER);
-
+    const ALLOWED_FLAGS  = [self::WRITING_MASTER];
+    
     /**
      * @var array
      */
-    protected $gateways = array();
-
+    protected $gateways = [];
+    
+    /**
+     * @var
+     */
     protected $writeMaster;
-
-    protected $readingPriorities = array();
-
-    protected $writingPriorities = array();
-
-    protected $methodsMapping = array(
-        'fetch' => self::FETCH,
+    
+    protected $readingPriorities = [];
+    
+    protected $writingPriorities = [];
+    
+    protected $methodsMapping    = [
+        'fetch'    => self::FETCH,
         'fetchOne' => self::FETCH_ONE,
         'fetchAll' => self::FETCH_ALL,
-        'persist' => self::PERSIST,
-        'update' => self::UPDATE,
-        'delete' => self::DELETE,
-        'purge' => self::PURGE
-
-    );
-
-
+        'persist'  => self::PERSIST,
+        'update'   => self::UPDATE,
+        'delete'   => self::DELETE,
+        'purge'    => self::PURGE
+    
+    ];
+    
+    
     /**
      * @param ResultSetDescriptorInterface $descriptor
      *
@@ -56,7 +59,48 @@ class MetaGateway implements MetaGatewayInterface
     {
         return $this->proxyReadingRequest(__FUNCTION__, $descriptor);
     }
-
+    
+    protected function proxyReadingRequest($method, ...$parameters)
+    {
+        $lastException = null;
+        
+        foreach ($this->readingPriorities as $id) {
+            if ($this->gateways[$id]->can($method, $parameters)) {
+                try {
+                    $result = $this->gateways[$id]->$method(...$parameters);
+                    
+                    return $result;
+                } catch (\Throwable $exception) {
+                    // just let it go
+                    $lastException = $exception;
+                }
+            }
+        }
+        
+        // no gateway finally made the job, so throw an exception
+        throw new MetaGatewayException(sprintf('No gateway was able to perform requested reading operation (%s). Registered gateways: %s.',
+            $method, implode(', ', $this->getRegisteredGatewaysClasses())), null, $lastException);
+    }
+    
+    protected function getRegisteredGatewaysClasses()
+    {
+        $classes = [];
+        foreach ($this->getGateways() as $gateway) {
+            $classes[] = get_class($gateway);
+        }
+        
+        return $classes;
+        
+    }
+    
+    /**
+     * @return array
+     */
+    public function getGateways()
+    {
+        return $this->gateways;
+    }
+    
     /**
      * @param ResultSetDescriptorInterface $descriptor
      *
@@ -66,7 +110,7 @@ class MetaGateway implements MetaGatewayInterface
     {
         return $this->proxyReadingRequest(__FUNCTION__, $descriptor);
     }
-
+    
     /**
      * @param $key
      *
@@ -76,7 +120,7 @@ class MetaGateway implements MetaGatewayInterface
     {
         return $this->proxyReadingRequest(__FUNCTION__, $key);
     }
-
+    
     /**
      * @param EntityInterface[] ...$entities
      *
@@ -86,16 +130,41 @@ class MetaGateway implements MetaGatewayInterface
     {
         return $this->proxyWritingRequest(__FUNCTION__, ...$entities);
     }
-
+    
+    protected function proxyWritingRequest($method, ...$parameters)
+    {
+        $lastException = null;
+        
+        $result = false;
+        foreach ($this->writingPriorities as $priority => $id) {
+            if ($this->gateways[$id]->can($method, $parameters)) {
+                try {
+                    $result = $this->gateways[$id]->$method(...$parameters);
+                    if (!$result) {
+                        throw new MetaGatewayException(sprintf('At least one gateway (%s: %s) did not achieve performing requested writing operation (%s).',
+                            $id, get_class($this->gateways[$id]), $method));
+                    }
+                } catch (\Throwable $exception) {
+                    if ($priority == PHP_INT_MAX) {
+                        throw new MetaGatewayException(sprintf('The writing master gateway (%s) failed performing requested writing operation (%s).',
+                            $id, $method), MetaGatewayException::WRITING_MASTER_FAILURE, $exception);
+                    }
+                }
+            }
+        }
+        
+        return $result;
+    }
+    
     /**
      * @param ResultSetDescriptorInterface $descriptor
-     * @param mixed $data
+     * @param mixed                        $data
      */
     public function update(ResultSetDescriptorInterface $descriptor, $data)
     {
         return $this->proxyWritingRequest(__FUNCTION__, $descriptor, $data);
     }
-
+    
     /**
      * @param EntityInterface[] ...$entities
      */
@@ -103,7 +172,7 @@ class MetaGateway implements MetaGatewayInterface
     {
         return $this->proxyWritingRequest(__FUNCTION__, ...$entities);
     }
-
+    
     /**
      * @param ResultSetDescriptorInterface $descriptor
      */
@@ -111,7 +180,7 @@ class MetaGateway implements MetaGatewayInterface
     {
         return $this->proxyWritingRequest(__FUNCTION__, $descriptor);
     }
-
+    
     /**
      * @param       $method
      * @param array $parameters
@@ -125,59 +194,16 @@ class MetaGateway implements MetaGatewayInterface
                 return true;
             }
         }
-
+        
         return false;
     }
-
-    protected function proxyReadingRequest($method, ...$parameters)
-    {
-        $lastException = null;
-
-        foreach ($this->readingPriorities as $id) {
-            if ($this->gateways[$id]->can($method, $parameters)) {
-                try {
-                    $result = $this->gateways[$id]->$method(...$parameters);
-                    return $result;
-                } catch (\Throwable $exception) {
-                    // just let it go
-                    $lastException = $exception;
-                }
-            }
-        }
-
-        // no gateway finally made the job, so throw an exception
-        throw new MetaGatewayException(sprintf('No gateway was able to perform requested reading operation (%s)', $method), null, $lastException);
-    }
-
-    protected function proxyWritingRequest($method, ...$parameters)
-    {
-        $lastException = null;
-
-        $result = false;
-        foreach ($this->writingPriorities as $priority => $id) {
-            if ($this->gateways[$id]->can($method, $parameters)) {
-                try {
-                    $result = $this->gateways[$id]->$method(...$parameters);
-                    if (!$result) {
-                        throw new MetaGatewayException(sprintf('At least one gateway (%s: %s) did not achieve performing requested writing operation (%s).', $id, get_class($this->gateways[$id]), $method));
-                    }
-                } catch (\Throwable $exception) {
-                    if ($priority == PHP_INT_MAX) {
-                        throw new MetaGatewayException(sprintf('The writing master gateway (%s) failed performing requested writing operation (%s).', $id, $method), MetaGatewayException::WRITING_MASTER_FAILURE, $exception);
-                    }
-                }
-            }
-        }
-
-        return $result;
-    }
-
+    
     /**
-     * @param string $id
+     * @param string           $id
      * @param GatewayInterface $gateway
-     * @param int $readingPriority
-     * @param int $writingPriority
-     * @param int $flags
+     * @param int              $readingPriority
+     * @param int              $writingPriority
+     * @param int              $flags
      *
      * @return $this
      */
@@ -189,67 +215,67 @@ class MetaGateway implements MetaGatewayInterface
         int $flags = 0
     ) {
         $this->gateways[$id] = $gateway;
-
+        
         $unknownFlags = $flags;
-
+        
         foreach (self::ALLOWED_FLAGS as $flag) {
             if ($unknownFlags & $flag) {
                 $unknownFlags -= $flag;
             }
         }
-
+        
         if ($unknownFlags) {
             throw new MetaGatewayException(
                 sprintf('Unknown registration flags %d', $flags)
             );
         }
-
+        
         if ($writingPriority == PHP_INT_MAX && !$flags & self::WRITING_MASTER) {
             throw new MetaGatewayException('PHP_INT writing priority is reserved to the WRITING_MASTER gateway. You may have forgotten the ' . MetaGateway::class . '::WRITING_MASTER flag.');
         }
-
+        
         if ($flags & self::WRITING_MASTER && isset($this->writingPriorities[PHP_INT_MAX])) {
             throw new MetaGatewayException('Cannot register two gateways as WRITING_MASTER');
         }
-
+        
         $this->updateReadingPriorities($id, $readingPriority, $flags);
         $this->updateWritingPriorities($id, $writingPriority, $flags);
-
+        
         return $this;
     }
-
+    
     protected function updateReadingPriorities($id, $priority, $flags)
     {
-        $readingPriorities = array();
-        $inserted = false;
-
+        $readingPriorities = [];
+        $inserted          = false;
+        
         // recompute priorities if already set
         while (isset($this->readingPriorities[$priority])) {
             $priority--;
         }
-
+        
         foreach ($this->readingPriorities as $position => $gatewayReference) {
             if ($priority > $position && !$inserted) {
                 $readingPriorities[$priority] = $id;
-                $inserted = true;
+                $inserted                     = true;
             }
-
+            
             $readingPriorities[$position] = $gatewayReference;
         }
-
+        
         // insert first priority
         if (!$inserted) {
             $readingPriorities[$priority] = $id;
         }
-
+        
         $this->readingPriorities = $readingPriorities;
     }
-
+    
     protected function updateWritingPriorities($id, $priority, $flags)
     {
-        $writingPriorities = array();
-        $inserted = false;
-
+        $writingPriorities = [];
+        $inserted          = false;
+        
         if ($flags & self::WRITING_MASTER) {
             $priority = PHP_INT_MAX;
         } else {
@@ -258,37 +284,29 @@ class MetaGateway implements MetaGatewayInterface
                 $priority--;
             }
         }
-
+        
         foreach ($this->writingPriorities as $position => $gatewayReference) {
             if ($priority > $position && !$inserted) {
                 $writingPriorities[$priority] = $id;
-                $inserted = true;
+                $inserted                     = true;
             }
-
+            
             $writingPriorities[$position] = $gatewayReference;
         }
-
+        
         // insert first priority
         if (!$inserted) {
             $writingPriorities[$priority] = $id;
         }
-
+        
         $this->writingPriorities = $writingPriorities;
     }
-
-    /**
-     * @return array
-     */
-    public function getGateways()
-    {
-        return $this->gateways;
-    }
-
+    
     public function getReadingPriorities()
     {
         return $this->readingPriorities;
     }
-
+    
     public function getWritingPriorities()
     {
         return $this->writingPriorities;

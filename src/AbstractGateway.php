@@ -20,6 +20,9 @@ use Zend\Hydrator\NamingStrategyEnabledInterface;
 abstract class AbstractGateway implements GatewayInterface
 {
     
+    const FETCH_ENTITIES = 1;
+    const FETCH_PROJECTION = 2;
+    
     /**
      * @var
      */
@@ -40,8 +43,14 @@ abstract class AbstractGateway implements GatewayInterface
      */
     protected $hydratorClass;
     
+    /**
+     * @var int
+     */
     protected $allowedMethods = self::ALL;
     
+    /**
+     * @var array
+     */
     protected $methodsMapping = array(
         'fetch'    => self::FETCH,
         'fetchOne' => self::FETCH_ONE,
@@ -80,7 +89,7 @@ abstract class AbstractGateway implements GatewayInterface
 
         // finally, fallback to the default behaviour: is the method standard and reported as allowed, or does
         // the method exists (for non-standard methods only)
-        return (isset($this->methodsMapping[$method])) ? $this->methodsMapping[$method] & $this->allowedMethods : method_exists($this, $method);
+        return (isset($this->methodsMapping[$method])) ? ($this->methodsMapping[$method] & $this->allowedMethods) : method_exists($this, $method);
     }
     
     /**
