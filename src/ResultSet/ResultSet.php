@@ -49,7 +49,7 @@ class ResultSet extends \ArrayObject implements ResultSetInterface
     {
         /** @var EntityInterface $entity */
         foreach ($entities as $entity) {
-            $this[$entity->getEntityIdentifier()] = $entity;
+            $this[$entity[$entity->getEntityIdentifier()]] = $entity;
         }
 
         return $this;

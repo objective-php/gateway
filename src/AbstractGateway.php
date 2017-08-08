@@ -19,29 +19,35 @@ use Zend\Hydrator\NamingStrategyEnabledInterface;
  */
 abstract class AbstractGateway implements GatewayInterface
 {
-    
+
     const FETCH_ENTITIES = 1;
     const FETCH_PROJECTION = 2;
     
+
     /**
      * @var
      */
    const DEFAULT_ENTITY_CLASS = Entity::class;
-    
+
     /**
      * @var
      */
     protected $entityClass;
-    
+
     /**
      * @var HydratorInterface
      */
     protected $hydrator;
-    
+
     /**
      * @var string
      */
     protected $hydratorClass;
+
+    /**
+     * @var string
+     */
+    protected $defaultEntityCollection = EntityInterface::DEFAULT_ENTITY_COLLECTION;
     
     /**
      * @var int
@@ -51,6 +57,7 @@ abstract class AbstractGateway implements GatewayInterface
     /**
      * @var array
      */
+
     protected $methodsMapping = array(
         'fetch'    => self::FETCH,
         'fetchOne' => self::FETCH_ONE,
@@ -60,7 +67,7 @@ abstract class AbstractGateway implements GatewayInterface
         'delete'   => self::DELETE,
         'purge'    => self::PURGE
     );
-    
+
     /**
      * @param $entityClass
      *
@@ -69,10 +76,20 @@ abstract class AbstractGateway implements GatewayInterface
     public function setEntityClass($entityClass)
     {
         $this->entityClass = $entityClass;
-        
+
         return $this;
     }
-    
+
+    /**
+     * Get EntityClass
+     *
+     * @return mixed
+     */
+    public function getEntityClass()
+    {
+        return $this->entityClass;
+    }
+
     public function can($method, ...$parameters): bool
     {
 
@@ -91,7 +108,7 @@ abstract class AbstractGateway implements GatewayInterface
         // the method exists (for non-standard methods only)
         return (isset($this->methodsMapping[$method])) ? ($this->methodsMapping[$method] & $this->allowedMethods) : method_exists($this, $method);
     }
-    
+
     /**
      * @return int
      */
@@ -99,7 +116,7 @@ abstract class AbstractGateway implements GatewayInterface
     {
         return $this->allowedMethods;
     }
-    
+
     /**
      * @param int $allowedMethods
      *
@@ -108,10 +125,10 @@ abstract class AbstractGateway implements GatewayInterface
     public function setAllowedMethods(int $allowedMethods)
     {
         $this->allowedMethods = $allowedMethods;
-        
+
         return $this;
     }
-    
+
     /**
      * @param $data
      *
@@ -120,18 +137,18 @@ abstract class AbstractGateway implements GatewayInterface
     protected function entityFactory($data)
     {
         $entityClass = $this->entityClass ?? self::DEFAULT_ENTITY_CLASS;
-        
+
         if (!$entityClass) {
             throw new GatewayException('No entity class provided.');
         }
-        
+
         if (!class_exists($entityClass)) {
             throw new GatewayException(sprintf('Target entity class "%s" not found.', $entityClass), GatewayException::ENTITY_NOT_FOUND);
         }
-        
+
         /** @var ProjectionInterface $entity */
         $entity = new $entityClass;
-        
+
         if (!$entity instanceof EntityInterface) {
             throw new GatewayException(
                 sprintf(
@@ -143,10 +160,10 @@ abstract class AbstractGateway implements GatewayInterface
         }
 
         $this->getHydrator()->hydrate($data, $entity);
-        
+
         return $entity;
     }
-    
+
     /**
      * @return HydratorInterface
      */
@@ -164,7 +181,7 @@ abstract class AbstractGateway implements GatewayInterface
 
             $this->hydrator = $hydrator;
         }
-        
+
         return $this->hydrator;
     }
 
@@ -225,6 +242,30 @@ abstract class AbstractGateway implements GatewayInterface
     public function setHydrator(HydratorInterface $hydrator)
     {
         $this->hydrator = $hydrator;
+
+        return $this;
+    }
+
+    /**
+     * Get DefaultCollection
+     *
+     * @return string
+     */
+    public function getDefaultEntityCollection() : string
+    {
+        return $this->defaultEntityCollection;
+    }
+
+    /**
+     * Set DefaultCollection
+     *
+     * @param string $defaultEntityCollection
+     *
+     * @return $this
+     */
+    public function setDefaultEntityCollection(string $defaultEntityCollection)
+    {
+        $this->defaultEntityCollection = $defaultEntityCollection;
 
         return $this;
     }
