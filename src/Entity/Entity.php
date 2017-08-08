@@ -12,10 +12,9 @@ use ObjectivePHP\Primitives\String\Snake;
  */
 class Entity extends \ArrayObject implements EntityInterface
 {
-    /**
-     * @var string
-     */
-    protected $entityCollection = 'NONE';
+
+    protected $entityCollection = self::DEFAULT_ENTITY_COLLECTION;
+
     
     /**
      * @var string
@@ -35,7 +34,7 @@ class Entity extends \ArrayObject implements EntityInterface
      */
     public function getEntityIdentifier(): string
     {
-        return $this[$this->entityIdentifier];
+        return $this->entityIdentifier;
     }
     
     /**
@@ -115,12 +114,26 @@ class Entity extends \ArrayObject implements EntityInterface
             return array_keys($this->getArrayCopy());
         } else {
             $fields = [];
-            foreach (get_class_methods($this) as $method) {
-                if (in_array($method, ['getEntityFields', 'getEntityIdentifier', 'getEntityCollection'])) {
+
+            foreach(get_class_methods($this) as $method)
+            {
+                if (in_array(
+                    $method,
+                    [
+                        'getEntityFields',
+                        'getEntityIdentifier',
+                        'getEntityCollection',
+                        'getArrayCopy',
+                        'getFlags',
+                        'getIterator',
+                        'getIteratorClass'
+                    ]
+                )) {
                     continue;
                 }
-                
-                if (strpos($method, 'get') === 0) {
+
+                if(strpos($method, 'get') === 0)
+                {
                     $fields[] = Snake::case(substr($method, 3));
                 }
             }
