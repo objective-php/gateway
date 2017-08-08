@@ -73,7 +73,7 @@ class Entity extends \ArrayObject implements EntityInterface
         if (method_exists($this, $setter)) {
             return $this->$setter($value);
         } else {
-            return parent::offsetGet($index);
+            return parent::offsetSet($index, $value);
         }
     }
     
