@@ -18,7 +18,7 @@ class ResultSetDescriptor implements ResultSetDescriptorInterface
     /**
      * @var array
      */
-    protected $filters = array();
+    protected $filters = [];
     
     /**
      * @var int
@@ -33,7 +33,7 @@ class ResultSetDescriptor implements ResultSetDescriptorInterface
     /**
      * @var array
      */
-    protected $sort = array();
+    protected $sort = [];
     
     /**
      * @var string
@@ -43,7 +43,7 @@ class ResultSetDescriptor implements ResultSetDescriptorInterface
     /**
      * @var array
      */
-    protected $aggregationRules = array();
+    protected $aggregationRules = [];
     
     /**
      * @var int
@@ -202,5 +202,10 @@ class ResultSetDescriptor implements ResultSetDescriptorInterface
     public function getCollectionName(): string
     {
         return $this->collectionName;
+    }
+    
+    public function getSort()
+    {
+        return $this->sort;
     }
 }

@@ -150,9 +150,4 @@ class Entity extends \ArrayObject implements EntityInterface
         }
     }
     
-    public function toArray()
-    {
-        return $this->getArrayCopy();
-    }
-    
 }
