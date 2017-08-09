@@ -15,10 +15,6 @@ class Entity extends \ArrayObject implements EntityInterface
 
     protected $entityCollection = self::DEFAULT_ENTITY_COLLECTION;
 
-    
-    /**
-     * @var string
-     */
     protected $entityIdentifier = 'id';
     
     /**
@@ -30,9 +26,21 @@ class Entity extends \ArrayObject implements EntityInterface
     }
     
     /**
+     * @param string $entityCollection
+     *
+     * @return $this
+     */
+    public function setEntityCollection($entityCollection)
+    {
+        $this->entityCollection = $entityCollection;
+        
+        return $this;
+    }
+    
+    /**
      * @return string
      */
-    public function getEntityIdentifier(): string
+    public function getEntityIdentifier() : string
     {
         return $this->entityIdentifier;
     }
@@ -70,9 +78,9 @@ class Entity extends \ArrayObject implements EntityInterface
     {
         $setter = 'set' . Camel::case($index);
         if (method_exists($this, $setter)) {
-            return $this->$setter($value);
+            $this->$setter($value);
         } else {
-            return parent::offsetSet($index, $value);
+            parent::offsetSet($index, $value);
         }
     }
     
@@ -146,4 +154,5 @@ class Entity extends \ArrayObject implements EntityInterface
     {
         return $this->getArrayCopy();
     }
+    
 }

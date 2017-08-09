@@ -2,6 +2,7 @@
 
 namespace ObjectivePHP\Gateway;
 
+use Fei\Entities\Hydrator\ContextAwareEntityHydrator;
 use ObjectivePHP\Gateway\Entity\Entity;
 use ObjectivePHP\Gateway\Entity\EntityInterface;
 use ObjectivePHP\Gateway\Exception\GatewayException;
@@ -171,7 +172,7 @@ abstract class AbstractGateway implements GatewayInterface
     {
         if (is_null($this->hydrator)) {
             $entityClass = $this->entityClass ?? self::DEFAULT_ENTITY_CLASS;
-            $className = $this->hydratorClass ?: ($entityClass == Entity::class) ? ArraySerializable::class : ClassMethods::class;
+            $className = $this->hydratorClass ?: ContextAwareEntityHydrator::class;
 
             /** @var HydratorInterface $hydrator */
             $hydrator = new $className;
