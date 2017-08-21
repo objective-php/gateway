@@ -22,23 +22,23 @@ use ObjectivePHP\Gateway\ResultSet\ResultSetInterface;
 class MetaGateway implements MetaGatewayInterface
 {
     const WRITING_MASTER = 1;
-    const ALLOWED_FLAGS  = [self::WRITING_MASTER];
+    const ALLOWED_FLAGS  = array(self::WRITING_MASTER);
     
     /**
      * @var array
      */
-    protected $gateways = [];
+    protected $gateways = array();
     
     /**
      * @var
      */
     protected $writeMaster;
     
-    protected $readingPriorities = [];
+    protected $readingPriorities = array();
     
-    protected $writingPriorities = [];
+    protected $writingPriorities = array();
     
-    protected $methodsMapping    = [
+    protected $methodsMapping    = array(
         'fetch'    => self::FETCH,
         'fetchOne' => self::FETCH_ONE,
         'fetchAll' => self::FETCH_ALL,
@@ -47,9 +47,10 @@ class MetaGateway implements MetaGatewayInterface
         'delete'   => self::DELETE,
         'purge'    => self::PURGE
     
-    ];
+    );
     
-    
+    protected $didFallback = false;
+
     /**
      * @param ResultSetDescriptorInterface $descriptor
      *
@@ -62,13 +63,19 @@ class MetaGateway implements MetaGatewayInterface
     
     protected function proxyReadingRequest($method, ...$parameters)
     {
+        $this->didFallback = false;
         $lastException = null;
-        
+
+        $gatewaysTried = array();
+
         foreach ($this->readingPriorities as $id) {
             if ($this->gateways[$id]->can($method, $parameters)) {
+                $gatewaysTried[] = $id;
                 try {
                     $result = $this->gateways[$id]->$method(...$parameters);
-                    
+                    if (count($gatewaysTried) > 1) {
+                        $this->didFallback = true;
+                    }
                     return $result;
                 } catch (\Throwable $exception) {
                     // just let it go
@@ -78,19 +85,25 @@ class MetaGateway implements MetaGatewayInterface
         }
         
         // no gateway finally made the job, so throw an exception
-        throw new MetaGatewayException(sprintf('No gateway was able to perform requested reading operation (%s). Registered gateways: %s.',
-            $method, implode(', ', $this->getRegisteredGatewaysClasses())), null, $lastException);
+        $allGateways = $this->getRegisteredGatewaysClasses();
+        $actualGateways = implode(', ', array_intersect_key($allGateways, array_flip($gatewaysTried)));
+
+        throw new MetaGatewayException(sprintf(
+            'No gateway was able to perform requested reading operation (%s). Requested gateways: %s. Registered gateways: %s.',
+            $method,
+            $actualGateways,
+            implode(', ', $allGateways)
+        ), null, $lastException);
     }
     
     protected function getRegisteredGatewaysClasses()
     {
-        $classes = [];
-        foreach ($this->getGateways() as $gateway) {
-            $classes[] = get_class($gateway);
+        $classes = array();
+        foreach ($this->getGateways() as $id => $gateway) {
+            $classes[$id] = get_class($gateway);
         }
         
         return $classes;
-        
     }
     
     /**
@@ -141,13 +154,20 @@ class MetaGateway implements MetaGatewayInterface
                 try {
                     $result = $this->gateways[$id]->$method(...$parameters);
                     if (!$result) {
-                        throw new MetaGatewayException(sprintf('At least one gateway (%s: %s) did not achieve performing requested writing operation (%s).',
-                            $id, get_class($this->gateways[$id]), $method));
+                        throw new MetaGatewayException(sprintf(
+                            'At least one gateway (%s: %s) did not achieve performing requested writing operation (%s).',
+                            $id,
+                            get_class($this->gateways[$id]),
+                            $method
+                        ));
                     }
                 } catch (\Throwable $exception) {
                     if ($priority == PHP_INT_MAX) {
-                        throw new MetaGatewayException(sprintf('The writing master gateway (%s) failed performing requested writing operation (%s).',
-                            $id, $method), MetaGatewayException::WRITING_MASTER_FAILURE, $exception);
+                        throw new MetaGatewayException(sprintf(
+                            'The writing master gateway (%s) failed performing requested writing operation (%s).',
+                            $id,
+                            $method
+                        ), MetaGatewayException::WRITING_MASTER_FAILURE, $exception);
                     }
                 }
             }
@@ -246,7 +266,7 @@ class MetaGateway implements MetaGatewayInterface
     
     protected function updateReadingPriorities($id, $priority, $flags)
     {
-        $readingPriorities = [];
+        $readingPriorities = array();
         $inserted          = false;
         
         // recompute priorities if already set
@@ -273,7 +293,7 @@ class MetaGateway implements MetaGatewayInterface
     
     protected function updateWritingPriorities($id, $priority, $flags)
     {
-        $writingPriorities = [];
+        $writingPriorities = array();
         $inserted          = false;
         
         if ($flags & self::WRITING_MASTER) {
@@ -310,5 +330,10 @@ class MetaGateway implements MetaGatewayInterface
     public function getWritingPriorities()
     {
         return $this->writingPriorities;
+    }
+
+    public function didFallback()
+    {
+        return $this->didFallback;
     }
 }

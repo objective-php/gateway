@@ -49,7 +49,7 @@ class ResultSet extends \ArrayObject implements ResultSetInterface
     {
         /** @var EntityInterface $entity */
         foreach ($entities as $entity) {
-            $this[$entity[$entity->getKey()]] = $entity;
+            $this[$entity[$entity->getEntityIdentifier()]] = $entity;
         }
 
         return $this;
@@ -60,5 +60,10 @@ class ResultSet extends \ArrayObject implements ResultSetInterface
         foreach ($entities as $entity) {
             $this->append($entity);
         }
+    }
+
+    public function getTotal()
+    {
+        return count($this);
     }
 }

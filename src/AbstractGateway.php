@@ -2,11 +2,12 @@
 
 namespace ObjectivePHP\Gateway;
 
-use Fei\Entities\Hydrator\ContextAwareEntityHydrator;
 use ObjectivePHP\Gateway\Entity\Entity;
 use ObjectivePHP\Gateway\Entity\EntityInterface;
 use ObjectivePHP\Gateway\Exception\GatewayException;
 use ObjectivePHP\Gateway\Projection\ProjectionInterface;
+use Zend\Hydrator\ArraySerializable;
+use Zend\Hydrator\ClassMethods;
 use Zend\Hydrator\HydratorInterface;
 use Zend\Hydrator\NamingStrategy\UnderscoreNamingStrategy;
 use Zend\Hydrator\NamingStrategyEnabledInterface;
@@ -18,7 +19,6 @@ use Zend\Hydrator\NamingStrategyEnabledInterface;
  */
 abstract class AbstractGateway implements GatewayInterface
 {
-    
     const FETCH_ENTITIES   = 1;
     const FETCH_PROJECTION = 2;
     
@@ -53,13 +53,13 @@ abstract class AbstractGateway implements GatewayInterface
      */
     protected $allowedMethods     = self::ALL;
     
-    protected $delegatePersisters = [];
+    protected $delegatePersisters = array();
     
     /**
      * @var array
      */
     
-    protected $methodsMapping = [
+    protected $methodsMapping = array(
         'fetch'    => self::FETCH,
         'fetchOne' => self::FETCH_ONE,
         'fetchAll' => self::FETCH_ALL,
@@ -67,7 +67,7 @@ abstract class AbstractGateway implements GatewayInterface
         'update'   => self::UPDATE,
         'delete'   => self::DELETE,
         'purge'    => self::PURGE
-    ];
+    );
     
     /**
      * Get EntityClass
@@ -107,8 +107,10 @@ abstract class AbstractGateway implements GatewayInterface
         
         // finally, fallback to the default behaviour: is the method standard and reported as allowed, or does
         // the method exists (for non-standard methods only)
-        return (isset($this->methodsMapping[$method])) ? ($this->methodsMapping[$method] & $this->allowedMethods) : method_exists($this,
-            $method);
+        return (isset($this->methodsMapping[$method])) ? ($this->methodsMapping[$method] & $this->allowedMethods) : method_exists(
+            $this,
+            $method
+        );
     }
     
     /**
@@ -233,8 +235,10 @@ abstract class AbstractGateway implements GatewayInterface
         }
         
         if (!class_exists($entityClass)) {
-            throw new GatewayException(sprintf('Target entity class "%s" not found.', $entityClass),
-                GatewayException::ENTITY_NOT_FOUND);
+            throw new GatewayException(
+                sprintf('Target entity class "%s" not found.', $entityClass),
+                GatewayException::ENTITY_NOT_FOUND
+            );
         }
         
         /** @var ProjectionInterface $entity */
@@ -243,13 +247,14 @@ abstract class AbstractGateway implements GatewayInterface
         if (!$entity instanceof EntityInterface) {
             throw new GatewayException(
                 sprintf(
-                    'Entity class "%s" does not implement "%s".', $entityClass,
+                    'Entity class "%s" does not implement "%s".',
+                    $entityClass,
                     EntityInterface::class
                 ),
                 GatewayException::INVALID_ENTITY
             );
         }
-        
+
         $this->getHydrator()->hydrate($data, $entity);
         
         return $entity;
@@ -262,7 +267,11 @@ abstract class AbstractGateway implements GatewayInterface
     {
         if (is_null($this->hydrator)) {
             $entityClass = $this->entityClass ?? self::DEFAULT_ENTITY_CLASS;
-            $className   = $this->hydratorClass ?: ContextAwareEntityHydrator::class;
+            if ($entityClass != self::DEFAULT_ENTITY_CLASS) {
+                $className = $this->hydratorClass ?: ClassMethods::class;
+            } else {
+                $className = ArraySerializable::class;
+            }
             
             /** @var HydratorInterface $hydrator */
             $hydrator = new $className;
