@@ -80,6 +80,14 @@ class ResultSetDescriptor implements ResultSetDescriptorInterface
         return $this;
     }
     
+    public function removeFilter($id)
+    {
+        unset($this->filters[$id]);
+        $this->filters = array_values($this->filters);
+        
+        return $this;
+    }
+    
     /**
      * @param int $page
      * @param int $pageSize
