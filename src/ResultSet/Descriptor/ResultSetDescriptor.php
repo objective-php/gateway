@@ -114,6 +114,8 @@ class ResultSetDescriptor implements ResultSetDescriptorInterface
         
         return $this;
     }
+
+
     
     /**
      * @param $property
