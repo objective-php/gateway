@@ -1,0 +1,11 @@
+language: php
+php:
+    - "7.0"
+before_script:
+    - composer selfupdate
+    - COMPOSER_ROOT_VERSION=dev-master composer install
+notifications:
+    email:
+        - "team@objective-php.org"
+script:
+    - php ./vendor/bin/codecept run unit
