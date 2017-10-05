@@ -10,11 +10,15 @@ namespace Tests\ObjectivePHP\Gateway;
 
 use Codeception\Test\Unit;
 use Codeception\Util\Stub;
+use ObjectivePHP\Events\EventsHandler;
 use ObjectivePHP\Gateway\AbstractGateway;
 use ObjectivePHP\Gateway\Entity\EntityInterface;
+use ObjectivePHP\Gateway\Event\MetaGateway\OnProxyReadingRequestException;
+use ObjectivePHP\Gateway\Event\MetaGateway\OnProxyWritingRequestException;
 use ObjectivePHP\Gateway\Exception\MetaGatewayException;
 use ObjectivePHP\Gateway\MetaGateway;
 use ObjectivePHP\Gateway\Projection\ProjectionInterface;
+use ObjectivePHP\Gateway\ResultSet\Descriptor\ResultSetDescriptor;
 use ObjectivePHP\Gateway\ResultSet\Descriptor\ResultSetDescriptorInterface;
 use ObjectivePHP\Gateway\ResultSet\ResultSetInterface;
 
@@ -209,6 +213,37 @@ class MetaGatewayTest extends Unit
         $meta->fetchAll($resultSetDescriptor);
     }
 
+    public function testReadingFailureTriggerEvent()
+    {
+        $meta = new MetaGateway();
+        $descriptor = new ResultSetDescriptor('test');
+
+        $gateway = Stub::make(AbstractGateway::class, array('fetchAll' => Stub::once(function () {
+            throw new \Exception('failed!');
+        })), $this);
+
+        $meta->registerGateway('gateway', $gateway);
+
+        $eventsHandler = $this->getMockBuilder(EventsHandler::class)->getMock();
+        $eventsHandler->expects($this->once())->method('trigger')->with(
+            OnProxyReadingRequestException::class,
+            $meta,
+            array(
+                'exception' => new \Exception('failed!'),
+                'method' => 'fetchAll',
+                'parameters' => array($descriptor)
+            ),
+            new OnProxyReadingRequestException()
+        );
+
+        $meta->setEventsHandler($eventsHandler);
+
+        try {
+            $meta->fetchAll($descriptor);
+        } catch (\Exception $e) {
+        }
+    }
+
     public function testWritingFallbackWithoutWritingMaster()
     {
         $meta = new MetaGateway();
@@ -242,6 +277,37 @@ class MetaGatewayTest extends Unit
         $this->expectException(MetaGatewayException::class);
 
         $meta->persist($entity);
+    }
+
+    public function testWritingFailureTriggerEvent()
+    {
+        $meta = new MetaGateway();
+        $entity = Stub::makeEmpty(EntityInterface::class);
+
+        $gateway = Stub::make(AbstractGateway::class, array('persist' => Stub::once(function () {
+            throw new \Exception('failed!');
+        })), $this);
+
+        $meta->registerGateway('gateway', $gateway);
+
+        $eventsHandler = $this->getMockBuilder(EventsHandler::class)->getMock();
+        $eventsHandler->expects($this->once())->method('trigger')->with(
+            OnProxyWritingRequestException::class,
+            $meta,
+            array(
+                'exception' => new \Exception('failed!'),
+                'method' => 'persist',
+                'parameters' => array($entity)
+            ),
+            new OnProxyWritingRequestException()
+        );
+
+        $meta->setEventsHandler($eventsHandler);
+
+        try {
+            $meta->persist($entity);
+        } catch (\Exception $e) {
+        }
     }
 
     public function testCanReturnsTrueOnlyIfRegisteredGatewayReturnsTrue()
