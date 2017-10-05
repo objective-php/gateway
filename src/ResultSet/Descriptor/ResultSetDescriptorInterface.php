@@ -16,6 +16,7 @@ namespace ObjectivePHP\Gateway\ResultSet\Descriptor;
 interface ResultSetDescriptorInterface
 {
     const OP_EQUALS     = '=';
+    const OP_NOT_EQUALS = '!=';
     const OP_CONTAINS   = 'contains';
     const OP_GT         = '>';
     const OP_GTOE       = '<';
