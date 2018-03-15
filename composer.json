@@ -24,7 +24,8 @@
         "zendframework/zend-filter": "^2.7",
         "zendframework/zend-servicemanager": "^3.3",
         "zendframework/zend-eventmanager": "^3.2",
-        "objective-php/events-handler": "^1.0"
+        "objective-php/events-handler": "^1.0",
+        "objective-php/services-factory": "^1.2"
     },
     "require-dev": {
         "codeception/codeception": "^2.1",

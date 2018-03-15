@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "26c3fdd315fac62b2afc825b97db6cba",
+    "content-hash": "5963fb357f9147bf48cf8bd8ed8e50ab",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -209,22 +209,22 @@
         },
         {
             "name": "objective-php/events-handler",
-            "version": "v1.0.6",
+            "version": "v1.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/objective-php/events-handler.git",
-                "reference": "6232de269b588f2a85bfd961ba7508f132367d9b"
+                "reference": "4311aa5cce903de98d61cb4fb74c9abf6d44064a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/objective-php/events-handler/zipball/6232de269b588f2a85bfd961ba7508f132367d9b",
-                "reference": "6232de269b588f2a85bfd961ba7508f132367d9b",
+                "url": "https://api.github.com/repos/objective-php/events-handler/zipball/4311aa5cce903de98d61cb4fb74c9abf6d44064a",
+                "reference": "4311aa5cce903de98d61cb4fb74c9abf6d44064a",
                 "shasum": ""
             },
             "require": {
                 "objective-php/matcher": "1.*",
                 "objective-php/primitives": "1.*",
-                "objective-php/services-factory": "1.0.*",
+                "objective-php/services-factory": "^1.0",
                 "php": ">=7.0"
             },
             "require-dev": {
@@ -254,7 +254,55 @@
                 "events handler",
                 "objective php"
             ],
-            "time": "2017-10-03T08:25:07+00:00"
+            "time": "2017-10-09T11:50:38+00:00"
+        },
+        {
+            "name": "objective-php/invokable",
+            "version": "v1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/objective-php/invokable.git",
+                "reference": "aec03eea6e85f133e30182cf9ca03bb1c85da1c1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/objective-php/invokable/zipball/aec03eea6e85f133e30182cf9ca03bb1c85da1c1",
+                "reference": "aec03eea6e85f133e30182cf9ca03bb1c85da1c1",
+                "shasum": ""
+            },
+            "require": {
+                "objective-php/primitives": "1.3.*",
+                "php": ">=7.0"
+            },
+            "require-dev": {
+                "objective-php/application": "dev-master",
+                "objective-php/components": "1.0.*",
+                "phpunit/phpunit": "5.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "ObjectivePHP\\Invokable\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Gauthier 'Rusty' Delamarre",
+                    "email": "gauthier@objective-php.org",
+                    "role": "lead"
+                }
+            ],
+            "description": "Objective PHP Invokable component",
+            "homepage": "https://github.com/objective-php/invokable",
+            "keywords": [
+                "invokable",
+                "objective php"
+            ],
+            "time": "2017-06-29T12:46:13+00:00"
         },
         {
             "name": "objective-php/matcher",
@@ -456,31 +504,31 @@
         },
         {
             "name": "objective-php/services-factory",
-            "version": "v1.0.5",
+            "version": "v1.2.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/objective-php/services-factory.git",
-                "reference": "21837c895f2131420a87c6a61e16f2cb8cfa451d"
+                "reference": "86713cf4dc001340f23bdf1a40345bca05f68156"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/objective-php/services-factory/zipball/21837c895f2131420a87c6a61e16f2cb8cfa451d",
-                "reference": "21837c895f2131420a87c6a61e16f2cb8cfa451d",
+                "url": "https://api.github.com/repos/objective-php/services-factory/zipball/86713cf4dc001340f23bdf1a40345bca05f68156",
+                "reference": "86713cf4dc001340f23bdf1a40345bca05f68156",
                 "shasum": ""
             },
             "require": {
                 "container-interop/container-interop": "^1.1",
-                "doctrine/annotations": "*",
-                "objective-php/config": "1.0.*",
-                "objective-php/matcher": "1.0.*",
-                "objective-php/primitives": "1.3.*",
+                "doctrine/annotations": "~1.4.0",
+                "objective-php/config": "~1.0.0",
+                "objective-php/invokable": "~1.1.1",
+                "objective-php/matcher": "~1.0.0",
+                "objective-php/primitives": "~1.3.0",
                 "php": ">=7.0",
                 "phpdocumentor/reflection-docblock": "*"
             },
             "require-dev": {
-                "objective-php/events-handler": "1.0.*",
-                "objective-php/invokable": "1.0.*",
-                "objective-php/phpunit-extension": "1.0.*",
+                "objective-php/events-handler": "~1.0.0",
+                "objective-php/phpunit-extension": "~1.0.0",
                 "phpunit/phpunit": "5.*",
                 "zendframework/zend-servicemanager": "^2.7.6"
             },
@@ -508,7 +556,7 @@
                 "objective php",
                 "services"
             ],
-            "time": "2017-04-14T13:10:09+00:00"
+            "time": "2017-11-20T10:59:33+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",

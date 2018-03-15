@@ -1,18 +1,18 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: gauthier
- * Date: 17/07/2017
- * Time: 11:11
- */
 
 namespace ObjectivePHP\Gateway;
 
+/**
+ * Interface MetaGatewayInterface
+ *
+ * @package ObjectivePHP\Gateway
+ */
 interface MetaGatewayInterface extends GatewayInterface
 {
-    
     /**
-     * @param                  $id
+     * Register a Gateway
+     *
+     * @param string           $id
      * @param GatewayInterface $gateway
      * @param int              $readingPriority
      * @param int              $writingPriority
@@ -20,5 +20,11 @@ interface MetaGatewayInterface extends GatewayInterface
      *
      * @return mixed
      */
-    public function registerGateway(string $id, GatewayInterface $gateway, int $readingPriority = 0, int $writingPriority = 0, int $flags = 0);
+    public function registerGateway(
+        string $id,
+        GatewayInterface $gateway,
+        int $readingPriority = 0,
+        int $writingPriority = 0,
+        int $flags = 0
+    );
 }

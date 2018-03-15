@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: gauthier
- * Date: 18/07/2017
- * Time: 13:42
- */
 
 namespace Tests\ObjectivePHP\Gateway;
 
@@ -12,7 +6,6 @@ use Codeception\Test\Unit;
 use Codeception\Util\Stub;
 use ObjectivePHP\Events\EventsHandler;
 use ObjectivePHP\Gateway\AbstractGateway;
-use ObjectivePHP\Gateway\Entity\EntityInterface;
 use ObjectivePHP\Gateway\Event\MetaGateway\OnProxyReadingRequestException;
 use ObjectivePHP\Gateway\Event\MetaGateway\OnProxyWritingRequestException;
 use ObjectivePHP\Gateway\Exception\MetaGatewayException;
@@ -111,7 +104,7 @@ class MetaGatewayTest extends Unit
     {
         $meta = new MetaGateway();
         $resultSetDescriptor = Stub::makeEmpty(ResultSetDescriptorInterface::class);
-        $entity = Stub::makeEmpty(EntityInterface::class);
+        $entity = Stub::makeEmpty(OtherEntity::class);
 
         $gateway = Stub::make(AbstractGateway::class, array('fetchOne' => Stub::once(function () use ($entity) {
             return $entity;
@@ -124,7 +117,7 @@ class MetaGatewayTest extends Unit
     public function testPersistRouting()
     {
         $meta = new MetaGateway();
-        $entity = Stub::makeEmpty(EntityInterface::class);
+        $entity = Stub::makeEmpty(OtherEntity::class);
 
         $gateway = Stub::make(AbstractGateway::class, array('persist' => Stub::once(function () {
             return true;
@@ -153,7 +146,7 @@ class MetaGatewayTest extends Unit
     public function testDeleteRouting()
     {
         $meta = new MetaGateway();
-        $entity = Stub::makeEmpty(EntityInterface::class);
+        $entity = Stub::makeEmpty(OtherEntity::class);
 
         $gateway = Stub::make(AbstractGateway::class, array('delete' => Stub::once(function () {
             return true;
@@ -247,24 +240,22 @@ class MetaGatewayTest extends Unit
     public function testWritingFallbackWithoutWritingMaster()
     {
         $meta = new MetaGateway();
-        $entity = Stub::makeEmpty(EntityInterface::class);
+        $entity = Stub::makeEmpty(OtherEntity::class);
 
         $firstGateway = Stub::make(AbstractGateway::class, array('persist' => Stub::once(function () {
             throw new \Exception('failed!');
         })), $this);
-        $secondGateway = Stub::make(AbstractGateway::class, array('persist' => Stub::once(function () {
-            return true;
-        })), $this);
+        $secondGateway = Stub::make(AbstractGateway::class, array('persist' => Stub::once()), $this);
 
         $meta->registerGateway('first', $firstGateway);
         $meta->registerGateway('second', $secondGateway);
-        $this->assertTrue($meta->persist($entity));
+        $this->assertNull($meta->persist($entity));
     }
 
     public function testWritingFallbackWithWrintingMaster()
     {
         $meta = new MetaGateway();
-        $entity = Stub::makeEmpty(EntityInterface::class);
+        $entity = Stub::makeEmpty(OtherEntity::class);
 
         $firstGateway = Stub::make(AbstractGateway::class, array('persist' => Stub::once(function () {
             throw new \Exception('failed!');
@@ -282,7 +273,7 @@ class MetaGatewayTest extends Unit
     public function testWritingFailureTriggerEvent()
     {
         $meta = new MetaGateway();
-        $entity = Stub::makeEmpty(EntityInterface::class);
+        $entity = Stub::makeEmpty(OtherEntity::class);
 
         $gateway = Stub::make(AbstractGateway::class, array('persist' => Stub::once(function () {
             throw new \Exception('failed!');

@@ -1,16 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: gauthier
- * Date: 18/07/2017
- * Time: 14:17
- */
 
 namespace ObjectivePHP\Gateway;
 
 use ObjectivePHP\Events\EventsHandlerAwareInterface;
 use ObjectivePHP\Events\EventsHandlerAwareTrait;
-use ObjectivePHP\Gateway\Entity\EntityInterface;
 use ObjectivePHP\Gateway\Event\MetaGateway\OnProxyReadingRequestException;
 use ObjectivePHP\Gateway\Event\MetaGateway\OnProxyWritingRequestException;
 use ObjectivePHP\Gateway\Exception\MetaGatewayException;
@@ -28,23 +21,27 @@ class MetaGateway implements MetaGatewayInterface, EventsHandlerAwareInterface
     use EventsHandlerAwareTrait;
 
     const WRITING_MASTER = 1;
-    const ALLOWED_FLAGS  = array(self::WRITING_MASTER);
+    const ALLOWED_FLAGS  = [self::WRITING_MASTER];
+
+    /**
+     * @var GatewayInterface[]
+     */
+    protected $gateways = [];
 
     /**
      * @var array
      */
-    protected $gateways = array();
+    protected $readingPriorities = [];
 
     /**
-     * @var
+     * @var array
      */
-    protected $writeMaster;
+    protected $writingPriorities = [];
 
-    protected $readingPriorities = array();
-
-    protected $writingPriorities = array();
-
-    protected $methodsMapping    = array(
+    /**
+     * @var array
+     */
+    protected $methodsMapping    = [
         'fetch'    => self::FETCH,
         'fetchOne' => self::FETCH_ONE,
         'fetchAll' => self::FETCH_ALL,
@@ -52,21 +49,185 @@ class MetaGateway implements MetaGatewayInterface, EventsHandlerAwareInterface
         'update'   => self::UPDATE,
         'delete'   => self::DELETE,
         'purge'    => self::PURGE
-    );
+    ];
 
+    /**
+     * @var bool
+     */
     protected $didFallback = false;
 
     /**
-     * @param ResultSetDescriptorInterface $descriptor
-     *
-     * @return ProjectionInterface
+     * {@inheritdoc}
      */
     public function fetch(ResultSetDescriptorInterface $descriptor): ProjectionInterface
     {
         return $this->proxyReadingRequest(__FUNCTION__, $descriptor);
     }
 
-    protected function proxyReadingRequest($method, ...$parameters)
+    /**
+     * {@inheritdoc}
+     */
+    public function fetchAll(ResultSetDescriptorInterface $descriptor): ResultSetInterface
+    {
+        return $this->proxyReadingRequest(__FUNCTION__, $descriptor);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fetchOne($key)
+    {
+        return $this->proxyReadingRequest(__FUNCTION__, $key);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function persist(...$entities)
+    {
+        $this->proxyWritingRequest(__FUNCTION__, ...$entities);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function update(ResultSetDescriptorInterface $descriptor, $data)
+    {
+        $this->proxyWritingRequest(__FUNCTION__, $descriptor, $data);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function delete(...$entities)
+    {
+        $this->proxyWritingRequest(__FUNCTION__, ...$entities);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function purge(ResultSetDescriptorInterface $descriptor)
+    {
+        $this->proxyWritingRequest(__FUNCTION__, $descriptor);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function can($method, ...$parameters): bool
+    {
+        foreach ($this->gateways as $gateway) {
+            if ($gateway->can($method, ...$parameters)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get Gateways
+     *
+     * @return GatewayInterface[]
+     */
+    public function getGateways(): array
+    {
+        return $this->gateways;
+    }
+
+    /**
+     * Register a gateway
+     *
+     * @param string           $id
+     * @param GatewayInterface $gateway
+     * @param int              $readingPriority
+     * @param int              $writingPriority
+     * @param int              $flags
+     *
+     * @return $this
+     *
+     * @throws MetaGatewayException
+     */
+    public function registerGateway(
+        string $id,
+        GatewayInterface $gateway,
+        int $readingPriority = 0,
+        int $writingPriority = 0,
+        int $flags = 0
+    ) {
+        $this->gateways[$id] = $gateway;
+
+        $unknownFlags = $flags;
+
+        foreach (self::ALLOWED_FLAGS as $flag) {
+            if ($unknownFlags & $flag) {
+                $unknownFlags -= $flag;
+            }
+        }
+
+        if ($unknownFlags) {
+            throw new MetaGatewayException(
+                sprintf('Unknown registration flags %d', $flags)
+            );
+        }
+
+        if ($writingPriority == PHP_INT_MAX && !$flags & self::WRITING_MASTER) {
+            throw new MetaGatewayException(
+                'PHP_INT writing priority is reserved to the WRITING_MASTER gateway. You may have forgotten the ' .
+                MetaGateway::class . '::WRITING_MASTER flag.'
+            );
+        }
+
+        if ($flags & self::WRITING_MASTER && isset($this->writingPriorities[PHP_INT_MAX])) {
+            throw new MetaGatewayException('Cannot register two gateways as WRITING_MASTER');
+        }
+
+        $this->updateReadingPriorities($id, $readingPriority, $flags);
+        $this->updateWritingPriorities($id, $writingPriority, $flags);
+
+        return $this;
+    }
+
+    /**
+     * Get ReadingPriorities
+     *
+     * @return array
+     */
+    public function getReadingPriorities(): array
+    {
+        return $this->readingPriorities;
+    }
+
+    /**
+     * Get WritingPriorities
+     *
+     * @return array
+     */
+    public function getWritingPriorities(): array
+    {
+        return $this->writingPriorities;
+    }
+
+    /**
+     * Get DidFallback
+     *
+     * @return bool
+     */
+    public function didFallback(): bool
+    {
+        return $this->didFallback;
+    }
+
+    /**
+     * @param string $method
+     * @param array  ...$parameters
+     *
+     * @return mixed
+     *
+     * @throws MetaGatewayException
+     */
+    protected function proxyReadingRequest(string $method, ...$parameters)
     {
         $this->didFallback = false;
         $lastException = null;
@@ -104,7 +265,8 @@ class MetaGateway implements MetaGatewayInterface, EventsHandlerAwareInterface
         $actualGateways = implode(', ', array_intersect_key($allGateways, array_flip($gatewaysTried)));
 
         throw new MetaGatewayException(sprintf(
-            'No gateway was able to perform requested reading operation (%s). Requested gateways: %s. Registered gateways: %s.',
+            'No gateway was able to perform requested ' .
+            'reading operation (%s). Requested gateways: %s. Registered gateways: %s.',
             $method,
             $actualGateways,
             implode(', ', $allGateways)
@@ -121,44 +283,6 @@ class MetaGateway implements MetaGatewayInterface, EventsHandlerAwareInterface
         return $classes;
     }
 
-    /**
-     * @return array
-     */
-    public function getGateways()
-    {
-        return $this->gateways;
-    }
-
-    /**
-     * @param ResultSetDescriptorInterface $descriptor
-     *
-     * @return ResultSetInterface
-     */
-    public function fetchAll(ResultSetDescriptorInterface $descriptor): ResultSetInterface
-    {
-        return $this->proxyReadingRequest(__FUNCTION__, $descriptor);
-    }
-
-    /**
-     * @param $key
-     *
-     * @return EntityInterface
-     */
-    public function fetchOne($key): EntityInterface
-    {
-        return $this->proxyReadingRequest(__FUNCTION__, $key);
-    }
-
-    /**
-     * @param EntityInterface[] ...$entities
-     *
-     * @return bool
-     */
-    public function persist(EntityInterface ...$entities): bool
-    {
-        return $this->proxyWritingRequest(__FUNCTION__, ...$entities);
-    }
-
     protected function proxyWritingRequest($method, ...$parameters)
     {
         $lastException = null;
@@ -170,7 +294,8 @@ class MetaGateway implements MetaGatewayInterface, EventsHandlerAwareInterface
                     $result = $this->gateways[$id]->$method(...$parameters);
                     if (!$result) {
                         throw new MetaGatewayException(sprintf(
-                            'At least one gateway (%s: %s) did not achieve performing requested writing operation (%s).',
+                            'At least one gateway (%s: %s) did not achieve performing requested writing operation ' .
+                            '(%s).',
                             $id,
                             get_class($this->gateways[$id]),
                             $method
@@ -200,94 +325,6 @@ class MetaGateway implements MetaGatewayInterface, EventsHandlerAwareInterface
         }
 
         return $result;
-    }
-
-    /**
-     * @param ResultSetDescriptorInterface $descriptor
-     * @param mixed                        $data
-     */
-    public function update(ResultSetDescriptorInterface $descriptor, $data)
-    {
-        return $this->proxyWritingRequest(__FUNCTION__, $descriptor, $data);
-    }
-
-    /**
-     * @param EntityInterface[] ...$entities
-     */
-    public function delete(EntityInterface ...$entities)
-    {
-        return $this->proxyWritingRequest(__FUNCTION__, ...$entities);
-    }
-
-    /**
-     * @param ResultSetDescriptorInterface $descriptor
-     */
-    public function purge(ResultSetDescriptorInterface $descriptor)
-    {
-        return $this->proxyWritingRequest(__FUNCTION__, $descriptor);
-    }
-
-    /**
-     * @param       $method
-     * @param array $parameters
-     *
-     * @return bool
-     */
-    public function can($method, ...$parameters): bool
-    {
-        foreach ($this->gateways as $gateway) {
-            if ($gateway->can($method, ...$parameters)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param string           $id
-     * @param GatewayInterface $gateway
-     * @param int              $readingPriority
-     * @param int              $writingPriority
-     * @param int              $flags
-     *
-     * @return $this
-     */
-    public function registerGateway(
-        string $id,
-        GatewayInterface $gateway,
-        int $readingPriority = 0,
-        int $writingPriority = 0,
-        int $flags = 0
-    ) {
-        $this->gateways[$id] = $gateway;
-
-        $unknownFlags = $flags;
-
-        foreach (self::ALLOWED_FLAGS as $flag) {
-            if ($unknownFlags & $flag) {
-                $unknownFlags -= $flag;
-            }
-        }
-
-        if ($unknownFlags) {
-            throw new MetaGatewayException(
-                sprintf('Unknown registration flags %d', $flags)
-            );
-        }
-
-        if ($writingPriority == PHP_INT_MAX && !$flags & self::WRITING_MASTER) {
-            throw new MetaGatewayException('PHP_INT writing priority is reserved to the WRITING_MASTER gateway. You may have forgotten the ' . MetaGateway::class . '::WRITING_MASTER flag.');
-        }
-
-        if ($flags & self::WRITING_MASTER && isset($this->writingPriorities[PHP_INT_MAX])) {
-            throw new MetaGatewayException('Cannot register two gateways as WRITING_MASTER');
-        }
-
-        $this->updateReadingPriorities($id, $readingPriority, $flags);
-        $this->updateWritingPriorities($id, $writingPriority, $flags);
-
-        return $this;
     }
 
     protected function updateReadingPriorities($id, $priority, $flags)
@@ -346,20 +383,5 @@ class MetaGateway implements MetaGatewayInterface, EventsHandlerAwareInterface
         }
 
         $this->writingPriorities = $writingPriorities;
-    }
-
-    public function getReadingPriorities()
-    {
-        return $this->readingPriorities;
-    }
-
-    public function getWritingPriorities()
-    {
-        return $this->writingPriorities;
-    }
-
-    public function didFallback()
-    {
-        return $this->didFallback;
     }
 }

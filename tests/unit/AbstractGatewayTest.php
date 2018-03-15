@@ -8,17 +8,13 @@
 
 namespace Tests\ObjectivePHP\Gateway;
 
-use Codeception\Util\Stub;
 use ObjectivePHP\Gateway\AbstractGateway;
-use ObjectivePHP\Gateway\Entity\Entity;
-use ObjectivePHP\Gateway\Entity\EntityInterface;
 use ObjectivePHP\Gateway\Exception\GatewayException;
 use ObjectivePHP\Gateway\GatewayInterface;
 use ObjectivePHP\Gateway\Projection\ProjectionInterface;
 use ObjectivePHP\Gateway\ResultSet\Descriptor\ResultSetDescriptorInterface;
 use ObjectivePHP\Gateway\ResultSet\ResultSetInterface;
 use PHPUnit\Framework\TestCase;
-use Zend\Hydrator\ArraySerializable;
 use Zend\Hydrator\ClassMethods;
 
 class AbstractGatewayTest extends TestCase
@@ -60,7 +56,7 @@ class AbstractGatewayTest extends TestCase
     public function testDefaultHydratorIsArraySerializableWhenDefaultEntityClassIsObjectiveEntity()
     {
         $gateway = new SomeGateway();
-        $this->assertInstanceOf(ArraySerializable::class, $gateway->getHydrator());
+        $this->assertInstanceOf(ClassMethods::class, $gateway->getHydrator());
     }
 
 
@@ -76,9 +72,9 @@ class AbstractGatewayTest extends TestCase
         $gateway = new SomeGateway();
         $entity = $gateway->fetchOne('whatever');
 
-        $this->assertInstanceOf(Entity::class, $entity);
+        $this->assertInstanceOf(OtherEntity::class, $entity);
 
-        $this->assertArrayHasKey('field', $entity->getArrayCopy());
+        $this->assertObjectHasAttribute('field', $entity);
     }
 
     public function testCustomEntityFactory()
@@ -89,16 +85,6 @@ class AbstractGatewayTest extends TestCase
         $this->assertInstanceOf(OtherEntity::class, $entity);
 
         $this->assertEquals('value', $entity->getField());
-    }
-
-    public function testInvalidEntityClassMakesEntityFactoryFail()
-    {
-        $gateway = new InvalidGateway();
-
-        $this->expectException(GatewayException::class);
-        $this->expectExceptionCode(GatewayException::INVALID_ENTITY);
-
-        $gateway->fetchOne('whatever');
     }
 
     public function testUnknownEntityClassMakesEntityFactoryFail()
@@ -114,6 +100,8 @@ class AbstractGatewayTest extends TestCase
 
 class SomeGateway extends AbstractGateway
 {
+    protected $entityClass = OtherEntity::class;
+
     public function existingMethod()
     {
     }
@@ -127,12 +115,12 @@ class SomeGateway extends AbstractGateway
     {
     }
 
-    public function fetchOne($key): EntityInterface
+    public function fetchOne($key)
     {
         return $this->entityFactory(array('id' => 1, 'field' => 'value'));
     }
 
-    public function persist(EntityInterface ...$entities): bool
+    public function persist(...$entities)
     {
         // TODO: Implement persist() method.
     }
@@ -142,7 +130,7 @@ class SomeGateway extends AbstractGateway
         // TODO: Implement update() method.
     }
 
-    public function delete(EntityInterface ...$entities)
+    public function delete(...$entities)
     {
         // TODO: Implement delete() method.
     }
@@ -185,12 +173,12 @@ class OtherGateway extends AbstractGateway
         // TODO: Implement fetchAll() method.
     }
 
-    public function fetchOne($key): EntityInterface
+    public function fetchOne($key)
     {
         return $this->entityFactory(array('id' => 1, 'field' => 'value'));
     }
 
-    public function persist(EntityInterface ...$entities): bool
+    public function persist(...$entities)
     {
         // TODO: Implement persist() method.
     }
@@ -200,7 +188,7 @@ class OtherGateway extends AbstractGateway
         // TODO: Implement update() method.
     }
 
-    public function delete(EntityInterface ...$entities)
+    public function delete(...$entities)
     {
         // TODO: Implement delete() method.
     }
@@ -225,7 +213,7 @@ class OtherGateway extends AbstractGateway
     }
 }
 
-class OtherEntity extends Entity
+class OtherEntity
 {
     protected $field;
 
@@ -260,12 +248,12 @@ class InvalidGateway extends AbstractGateway
         // TODO: Implement fetchAll() method.
     }
 
-    public function fetchOne($key): EntityInterface
+    public function fetchOne($key)
     {
         return $this->entityFactory(array('id' => 1, 'field' => 'value'));
     }
 
-    public function persist(EntityInterface ...$entities): bool
+    public function persist(...$entities)
     {
         // TODO: Implement persist() method.
     }
@@ -275,7 +263,7 @@ class InvalidGateway extends AbstractGateway
         // TODO: Implement update() method.
     }
 
-    public function delete(EntityInterface ...$entities)
+    public function delete(...$entities)
     {
         // TODO: Implement delete() method.
     }

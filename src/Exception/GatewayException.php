@@ -2,6 +2,11 @@
 
 namespace ObjectivePHP\Gateway\Exception;
 
+/**
+ * Class GatewayException
+ *
+ * @package ObjectivePHP\Gateway\Exception
+ */
 class GatewayException extends \Exception
 {
     const ENTITY_NOT_FOUND = 1;
