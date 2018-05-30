@@ -19,7 +19,7 @@ interface ResultSetDescriptorInterface
     const OP_NOT_EQUALS = '!=';
     const OP_CONTAINS   = 'contains';
     const OP_GT         = '>';
-    const OP_GTOE       = '<';
+    const OP_GTOE       = '>=';
     const OP_LT         = '<';
     const OP_LTOE       = '<=';
     const OP_BINARY_AND = '&';
