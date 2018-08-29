@@ -56,7 +56,8 @@ class MetaGateway implements MetaGatewayInterface, EventsHandlerAwareInterface
 
     protected $didFallback = false;
 
-    protected $newId = '';
+    /** @var string */
+    protected $newId;
 
     /**
      * @param ResultSetDescriptorInterface $descriptor
