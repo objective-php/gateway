@@ -56,6 +56,9 @@ class MetaGateway implements MetaGatewayInterface, EventsHandlerAwareInterface
 
     protected $didFallback = false;
 
+    /** @var string */
+    protected $newId;
+
     /**
      * @param ResultSetDescriptorInterface $descriptor
      *
@@ -361,5 +364,25 @@ class MetaGateway implements MetaGatewayInterface, EventsHandlerAwareInterface
     public function didFallback()
     {
         return $this->didFallback;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getNewId()
+    {
+        return $this->newId;
+    }
+
+    /**
+     * @param string $newId
+     *
+     * @return MetaGateway
+     */
+    public function setNewId(string $newId): MetaGateway
+    {
+        $this->newId = $newId;
+
+        return $this;
     }
 }

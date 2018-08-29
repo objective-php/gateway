@@ -7,6 +7,11 @@
         "database",
         "objective php"
     ],
+    "config": {
+        "platform": {
+            "php": "7.0.18"
+        }
+    },
     "homepage": "https://github.com/objective-php/gateway",
     "license": "GPL-3.0",
     "authors": [
