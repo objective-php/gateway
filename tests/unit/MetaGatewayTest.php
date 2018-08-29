@@ -324,4 +324,16 @@ class MetaGatewayTest extends Unit
 
         $meta->can('whatever');
     }
+
+    public function testCanSetAndGetANewId()
+    {
+        $meta = new MetaGateway();
+        $id = 'UUID:123:toto';
+
+        $this->assertNull($meta->getNewId());
+
+        $meta->setNewId($id);
+
+        $this->assertEquals($id, $meta->getNewId());
+    }
 }

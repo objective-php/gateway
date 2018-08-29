@@ -367,9 +367,9 @@ class MetaGateway implements MetaGatewayInterface, EventsHandlerAwareInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getNewId(): string
+    public function getNewId()
     {
         return $this->newId;
     }
