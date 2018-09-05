@@ -10,12 +10,10 @@ parameters:
         rules:
           - '@@PSR2'
           - -line_ending
-          - array_syntax
         using_cache: false
         path_mode: ~
         verbose: true
         diff: false
         triggered_by: ['php']
-      phplint: ~
       codeception:
         suite: unit

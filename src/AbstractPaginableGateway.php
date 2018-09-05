@@ -11,7 +11,7 @@ abstract class AbstractPaginableGateway extends AbstractGateway implements Pagin
 {
 
     /**
-     * @var
+     * @var int
      */
     protected $pageSize;
 
@@ -36,17 +36,15 @@ abstract class AbstractPaginableGateway extends AbstractGateway implements Pagin
     protected $defaultPageSize = 20;
 
     /**
-     * @param      $page
-     * @param null $pageSize
+     * @param int $page
+     * @param int|null $pageSize
      *
      * @return $this
      */
-    public function paginate($page = 1, $pageSize = null)
+    public function paginate($page = 1, $pageSize = null): self
     {
         $this->paginateNextQuery = true;
-
         $this->currentPage = $page;
-
         $this->pageSize = $pageSize ?? $this->defaultPageSize;
 
         return $this;

@@ -8,14 +8,17 @@
 
 namespace Tests\ObjectivePHP\Gateway;
 
+use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Codeception\Util\Stub;
 use ObjectivePHP\Events\EventsHandler;
+use ObjectivePHP\Events\EventsHandlerInterface;
 use ObjectivePHP\Gateway\AbstractGateway;
 use ObjectivePHP\Gateway\Entity\EntityInterface;
 use ObjectivePHP\Gateway\Event\MetaGateway\OnProxyReadingRequestException;
 use ObjectivePHP\Gateway\Event\MetaGateway\OnProxyWritingRequestException;
 use ObjectivePHP\Gateway\Exception\MetaGatewayException;
+use ObjectivePHP\Gateway\GatewayInterface;
 use ObjectivePHP\Gateway\MetaGateway;
 use ObjectivePHP\Gateway\Projection\ProjectionInterface;
 use ObjectivePHP\Gateway\ResultSet\Descriptor\ResultSetDescriptor;
@@ -82,12 +85,15 @@ class MetaGatewayTest extends Unit
     public function testFetchRouting()
     {
         $meta = new MetaGateway();
+        /** @var ResultSetDescriptorInterface $resultSetDescriptor */
         $resultSetDescriptor = Stub::makeEmpty(ResultSetDescriptorInterface::class);
         $projection = Stub::makeEmpty(ProjectionInterface::class);
 
-        $gateway = Stub::make(AbstractGateway::class, array('fetch' => Stub::once(function () use ($projection) {
-            return $projection;
-        })), $this);
+
+        /** @var GatewayInterface $gateway */
+        $gateway = $this->make(AbstractGateway::class, [
+            'fetch' => Expected::once($projection)
+        ]);
 
         $meta->registerGateway('gw', $gateway);
         $this->assertSame($projection, $meta->fetch($resultSetDescriptor));
@@ -96,12 +102,14 @@ class MetaGatewayTest extends Unit
     public function testFetchAllRouting()
     {
         $meta = new MetaGateway();
+        /** @var ResultSetDescriptorInterface $resultSetDescriptor */
         $resultSetDescriptor = Stub::makeEmpty(ResultSetDescriptorInterface::class);
         $resultSet = Stub::makeEmpty(ResultSetInterface::class);
 
-        $gateway = Stub::make(AbstractGateway::class, array('fetchAll' => Stub::once(function () use ($resultSet) {
-            return $resultSet;
-        })), $this);
+        /** @var GatewayInterface $gateway */
+        $gateway = $this->make(AbstractGateway::class, [
+            'fetchAll' => Expected::once($resultSet)
+        ]);
 
         $meta->registerGateway('gw', $gateway);
         $this->assertSame($resultSet, $meta->fetchAll($resultSetDescriptor));
@@ -110,12 +118,14 @@ class MetaGatewayTest extends Unit
     public function testFetchOneRouting()
     {
         $meta = new MetaGateway();
+        /** @var ResultSetDescriptorInterface $resultSetDescriptor */
         $resultSetDescriptor = Stub::makeEmpty(ResultSetDescriptorInterface::class);
         $entity = Stub::makeEmpty(EntityInterface::class);
 
-        $gateway = Stub::make(AbstractGateway::class, array('fetchOne' => Stub::once(function () use ($entity) {
-            return $entity;
-        })), $this);
+        /** @var GatewayInterface $gateway */
+        $gateway = $this->make(AbstractGateway::class, [
+            'fetchOne' => Expected::once($entity)
+        ]);
 
         $meta->registerGateway('gw', $gateway);
         $this->assertSame($entity, $meta->fetchOne($resultSetDescriptor));
@@ -124,11 +134,13 @@ class MetaGatewayTest extends Unit
     public function testPersistRouting()
     {
         $meta = new MetaGateway();
+        /** @var EntityInterface $entity */
         $entity = Stub::makeEmpty(EntityInterface::class);
 
-        $gateway = Stub::make(AbstractGateway::class, array('persist' => Stub::once(function () {
-            return true;
-        })), $this);
+        /** @var GatewayInterface $gateway */
+        $gateway = $this->make(AbstractGateway::class, [
+            'persist' => Expected::once(true)
+        ]);
 
         $meta->registerGateway('gw', $gateway);
 
@@ -141,9 +153,10 @@ class MetaGatewayTest extends Unit
 
         $resultSetDescriptor = Stub::makeEmpty(ResultSetDescriptorInterface::class);
 
-        $gateway = Stub::make(AbstractGateway::class, array('update' => Stub::exactly(1, function () {
-            return true;
-        })), $this);
+        /** @var GatewayInterface $gateway */
+        $gateway = $this->make(AbstractGateway::class, [
+            'update' => Expected::once(true)
+        ]);
 
         $meta->registerGateway('gw', $gateway);
 
@@ -153,11 +166,14 @@ class MetaGatewayTest extends Unit
     public function testDeleteRouting()
     {
         $meta = new MetaGateway();
+
+        /** @var EntityInterface $entity */
         $entity = Stub::makeEmpty(EntityInterface::class);
 
-        $gateway = Stub::make(AbstractGateway::class, array('delete' => Stub::once(function () {
-            return true;
-        })), $this);
+        /** @var GatewayInterface $gateway */
+        $gateway = $this->make(AbstractGateway::class, [
+            'delete' => Expected::once(true)
+        ]);
 
         $meta->registerGateway('gw', $gateway);
 
@@ -168,11 +184,13 @@ class MetaGatewayTest extends Unit
     {
         $meta = new MetaGateway();
 
+        /** @var ResultSetDescriptorInterface $resultSetDescriptor */
         $resultSetDescriptor = Stub::makeEmpty(ResultSetDescriptorInterface::class);
 
-        $gateway = Stub::make(AbstractGateway::class, array('purge' => Stub::exactly(1, function () {
-            return true;
-        })), $this);
+        /** @var GatewayInterface $gateway */
+        $gateway = $this->make(AbstractGateway::class, [
+            'purge' => Expected::once(true)
+        ]);
 
         $meta->registerGateway('gw', $gateway);
 
@@ -182,15 +200,21 @@ class MetaGatewayTest extends Unit
     public function testReadingFallback()
     {
         $meta = new MetaGateway();
+        /** @var ResultSetDescriptorInterface $resultSetDescriptor */
         $resultSetDescriptor = Stub::makeEmpty(ResultSetDescriptorInterface::class);
         $resultSet = Stub::makeEmpty(ResultSetInterface::class);
 
-        $firstGateway = Stub::make(AbstractGateway::class, array('fetchAll' => Stub::once(function () use ($resultSet) {
-            throw new \Exception('failed!');
-        })), $this);
-        $secondGateway = Stub::make(AbstractGateway::class, array('fetchAll' => Stub::once(function () use ($resultSet) {
-            return $resultSet;
-        })), $this);
+        /** @var GatewayInterface $firstGateway */
+        $firstGateway = $this->make(AbstractGateway::class, [
+            'fetchAll' => Expected::once(function () {
+                throw new \Exception('failed!');
+            })
+        ]);
+
+        /** @var GatewayInterface $secondGateway */
+        $secondGateway = $this->make(AbstractGateway::class, [
+            'fetchAll' => Expected::once($resultSet)
+        ]);
 
         $meta->registerGateway('first', $firstGateway);
         $meta->registerGateway('second', $secondGateway);
@@ -200,12 +224,15 @@ class MetaGatewayTest extends Unit
     public function testReadingFailure()
     {
         $meta = new MetaGateway();
+        /** @var ResultSetDescriptorInterface $resultSetDescriptor */
         $resultSetDescriptor = Stub::makeEmpty(ResultSetDescriptorInterface::class);
-        $resultSet = Stub::makeEmpty(ResultSetInterface::class);
 
-        $firstGateway = Stub::make(AbstractGateway::class, array('fetchAll' => Stub::once(function () use ($resultSet) {
-            throw new \Exception('failed!');
-        })), $this);
+        /** @var GatewayInterface $firstGateway */
+        $firstGateway = $this->make(AbstractGateway::class, [
+            'fetchAll' => Expected::once(function () {
+                throw new \Exception('failed!');
+            })
+        ]);
 
         $meta->registerGateway('first', $firstGateway);
 
@@ -218,12 +245,16 @@ class MetaGatewayTest extends Unit
         $meta = new MetaGateway();
         $descriptor = new ResultSetDescriptor('test');
 
-        $gateway = Stub::make(AbstractGateway::class, array('fetchAll' => Stub::once(function () {
-            throw new \Exception('failed!');
-        })), $this);
+        /** @var GatewayInterface $gateway */
+        $gateway = $this->make(AbstractGateway::class, [
+            'fetchAll' => Expected::once(function () {
+                throw new \Exception('failed!');
+            })
+        ]);
 
         $meta->registerGateway('gateway', $gateway);
 
+        /** @var EventsHandlerInterface $eventsHandler */
         $eventsHandler = $this->getMockBuilder(EventsHandler::class)->getMock();
         $eventsHandler->expects($this->once())->method('trigger')->with(
             OnProxyReadingRequestException::class,
@@ -247,14 +278,20 @@ class MetaGatewayTest extends Unit
     public function testWritingFallbackWithoutWritingMaster()
     {
         $meta = new MetaGateway();
+        /** @var EntityInterface $entity */
         $entity = Stub::makeEmpty(EntityInterface::class);
 
-        $firstGateway = Stub::make(AbstractGateway::class, array('persist' => Stub::once(function () {
-            throw new \Exception('failed!');
-        })), $this);
-        $secondGateway = Stub::make(AbstractGateway::class, array('persist' => Stub::once(function () {
-            return true;
-        })), $this);
+        /** @var GatewayInterface $firstGateway */
+        $firstGateway = $this->make(AbstractGateway::class, [
+            'persist' => Expected::once(function () {
+                throw new \Exception('failed!');
+            })
+        ]);
+
+        /** @var GatewayInterface $secondGateway */
+        $secondGateway = $this->make(AbstractGateway::class, [
+            'persist' => Expected::once(true)
+        ]);
 
         $meta->registerGateway('first', $firstGateway);
         $meta->registerGateway('second', $secondGateway);
@@ -264,12 +301,20 @@ class MetaGatewayTest extends Unit
     public function testWritingFallbackWithWrintingMaster()
     {
         $meta = new MetaGateway();
+        /** @var EntityInterface $entity */
         $entity = Stub::makeEmpty(EntityInterface::class);
 
-        $firstGateway = Stub::make(AbstractGateway::class, array('persist' => Stub::once(function () {
-            throw new \Exception('failed!');
-        })), $this);
-        $secondGateway = Stub::make(AbstractGateway::class, array('persist' => Stub::never()), $this);
+        /** @var GatewayInterface $firstGateway */
+        $firstGateway = $this->make(AbstractGateway::class, [
+            'persist' => Expected::once(function () {
+                throw new \Exception('failed!');
+            })
+        ]);
+
+        /** @var GatewayInterface $secondGateway */
+        $secondGateway = $this->make(AbstractGateway::class, [
+            'persist' => Expected::never()
+        ]);
 
         $meta->registerGateway('first', $firstGateway, 0, PHP_INT_MAX, MetaGateway::WRITING_MASTER);
         $meta->registerGateway('second', $secondGateway);
@@ -282,11 +327,16 @@ class MetaGatewayTest extends Unit
     public function testWritingFailureTriggerEvent()
     {
         $meta = new MetaGateway();
+        /** @var EntityInterface $entity */
         $entity = Stub::makeEmpty(EntityInterface::class);
 
-        $gateway = Stub::make(AbstractGateway::class, array('persist' => Stub::once(function () {
-            throw new \Exception('failed!');
-        })), $this);
+
+        /** @var GatewayInterface $secondGateway */
+        $gateway = $this->make(AbstractGateway::class, [
+            'persist' => Expected::once(function () {
+                throw new \Exception('failed!');
+            })
+        ]);
 
         $meta->registerGateway('gateway', $gateway);
 
@@ -316,9 +366,8 @@ class MetaGatewayTest extends Unit
 
         $this->assertFalse($meta->can('whatever'));
 
-        $gateway = Stub::makeEmpty(AbstractGateway::class, array('can' => Stub::once(function ($method) {
-            return true;
-        })), $this);
+        /** @var GatewayInterface $gateway */
+        $gateway = Stub::makeEmpty(AbstractGateway::class, ['can' => Expected::once(true)]);
 
         $meta->registerGateway('single', $gateway);
 

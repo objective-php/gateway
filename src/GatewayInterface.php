@@ -18,11 +18,12 @@ interface GatewayInterface
     const FETCH_ONE = 2;
     const FETCH_ALL = 4;
     const PERSIST   = 8;
-    const UPDATE    = 16;
-    const DELETE    = 32;
-    const PURGE     = 64;
+    const CREATE    = 16;
+    const UPDATE    = 32;
+    const DELETE    = 64;
+    const PURGE     = 128;
     
-    const WRITE = self::PERSIST | self::UPDATE | self::DELETE | self::PURGE;
+    const WRITE = self::PERSIST | self::CREATE | self::UPDATE | self::DELETE | self::PURGE;
     const READ  = self::FETCH | self::FETCH_ONE | self::FETCH_ALL;
     const ALL   = self::READ | self::WRITE;
     
@@ -54,7 +55,17 @@ interface GatewayInterface
      * @return bool
      */
     public function persist(EntityInterface ...$entities): bool;
-    
+
+    /**
+     * Insert an entity
+     *
+     * Save entitiy representation in persistence layer
+     *
+     * @param EntityInterface $entity
+     *
+     * @return bool
+     */
+    public function create(EntityInterface $entity): bool;
     
     /**
      * @param ResultSetDescriptorInterface $descriptor
@@ -67,7 +78,7 @@ interface GatewayInterface
     /**
      * Delete one or more entities
      *
-     * @param EntityInterface $entity
+     * @param EntityInterface[] $entities
      *
      * @return bool
      */
@@ -81,13 +92,14 @@ interface GatewayInterface
      * @return bool
      */
     public function purge(ResultSetDescriptorInterface $descriptor);
-    
+
     /**
      * Tells MetaGateway whether actual gateway can fetch/push to data to backend using given method and parameters
      *
-     * @param $method
+     * @param string $method
+     * @param array $parameters
      *
      * @return bool
      */
-    public function can($method, ...$parameters): bool;
+    public function can(string $method, ...$parameters): bool;
 }
