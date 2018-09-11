@@ -216,7 +216,7 @@ class MetaGateway implements MetaGatewayInterface, EventsHandlerAwareInterface
      * @return bool
      * @throws MetaGatewayException
      */
-    public function purge(ResultSetDescriptorInterface $descriptor): bool
+    public function purge(ResultSetDescriptorInterface $descriptor)
     {
         return $this->proxyWritingRequest(__FUNCTION__, [], $descriptor);
     }
@@ -229,7 +229,7 @@ class MetaGateway implements MetaGatewayInterface, EventsHandlerAwareInterface
      * @return bool
      * @throws MetaGatewayException
      */
-    protected function proxyWritingRequest(string $method, array $options = [], ...$parameters): bool
+    protected function proxyWritingRequest(string $method, array $options = [], ...$parameters)
     {
         $lastException = null;
         $result = false;
